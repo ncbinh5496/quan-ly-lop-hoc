@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="gradMask" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED" />
+      <stop offset="50%" stop-color="#EC4899" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#gradMask)" />
+  <g transform="scale(0.8) translate(64, 64)">
+    <path d="M160 128 H352 V224 C352 277 309 320 256 320 C203 320 160 277 160 224 Z" fill="#FFFFFF" />
+    <path d="M160 149 H122 C104 149 90 163 90 181 C90 208 112 229 139 229 H160 Z" fill="#FFFFFF" fill-opacity="0.85" />
+    <path d="M352 149 H390 C408 149 422 163 422 181 C422 208 400 229 373 229 H352 Z" fill="#FFFFFF" fill-opacity="0.85" />
+    <path d="M240 320 H272 V368 H240 Z" fill="#FFFFFF" />
+    <path d="M170 368 H342 V405 C342 414 335 421 326 421 H186 C177 421 170 414 170 405 Z" fill="#FFFFFF" />
+    <polygon points="256,165 269,200 306,200 277,224 288,261 256,237 224,261 235,224 206,200 243,200" fill="#F59E0B" />
+  </g>
+</svg>

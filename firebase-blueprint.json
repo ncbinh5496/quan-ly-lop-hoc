@@ -1,0 +1,62 @@
+{
+  "entities": {
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "Application settings and general configuration",
+      "type": "object",
+      "properties": {
+        "appTitle": { "type": "string" },
+        "appSlogan": { "type": "string" },
+        "teacher": { "type": "object" },
+        "activeClassId": { "type": "string" },
+        "badges": { "type": "array" },
+        "rewards": { "type": "array" },
+        "customRewardIcons": { "type": "array" },
+        "levels": { "type": "array" },
+        "pointCriteria": { "type": "array" },
+        "teacherPin": { "type": "string" },
+        "updatedAt": { "type": "number" }
+      }
+    },
+    "AppBranding": {
+      "title": "AppBranding",
+      "description": "Visual theme, header cover, and background configuration",
+      "type": "object",
+      "properties": {
+        "headerCoverUrl": { "type": "string" },
+        "backgroundConfig": { "type": "object" },
+        "updatedAt": { "type": "number" }
+      }
+    },
+    "ClassData": {
+      "title": "ClassData",
+      "description": "Classroom details, students, teams, transactions and rewards",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "students": { "type": "array" },
+        "groups": { "type": "array" },
+        "transactions": { "type": "array" },
+        "rewardTransactions": { "type": "array" },
+        "badges": { "type": "array" },
+        "updatedAt": { "type": "number" }
+      },
+      "required": ["id", "name"]
+    }
+  },
+  "firestore": {
+    "/app_data/settings": {
+      "schema": "AppSettings",
+      "description": "Global classroom and teaching settings"
+    },
+    "/app_data/branding": {
+      "schema": "AppBranding",
+      "description": "Visual branding and theme styling"
+    },
+    "/classes/{classId}": {
+      "schema": "ClassData",
+      "description": "Individual classroom collection partitioned per class ID"
+    }
+  }
+}
