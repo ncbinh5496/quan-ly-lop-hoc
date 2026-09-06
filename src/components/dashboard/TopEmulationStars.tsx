@@ -25,9 +25,6 @@ export const TopEmulationStars = memo(function TopEmulationStars({
   onAddPoint,
   onMinusPoint,
 }: TopEmulationStarsProps) {
-  const userRole = useStore(state => state.userRole);
-  const isParent = userRole === 'parent';
-
   const groupsMap = useMemo(() => {
     const map = new Map<string, string>();
     if (groups) {
@@ -54,14 +51,12 @@ export const TopEmulationStars = memo(function TopEmulationStars({
         </div>
 
         <div className="flex items-center gap-2">
-          {!isParent && (
-            <button
-              onClick={onOpenAwardModal}
-              className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
-            >
-              <Award size={14} /> Trao huy hiệu
-            </button>
-          )}
+          <button
+            onClick={onOpenAwardModal}
+            className="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-xl text-xs font-black shadow-sm transition-all flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <Award size={14} /> Trao huy hiệu
+          </button>
           <button
             onClick={() => onNavigateTab?.('students')}
             className="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"

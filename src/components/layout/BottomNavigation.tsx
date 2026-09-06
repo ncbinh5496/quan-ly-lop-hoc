@@ -24,7 +24,6 @@ export function BottomNavigation({
   isMobileDrawerOpen 
 }: BottomNavigationProps) {
   const activeClass = useActiveClass();
-  const userRole = useStore(state => state.userRole);
 
   const mainTabs = [
     {

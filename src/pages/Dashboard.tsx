@@ -8,7 +8,6 @@ import { AwardBadgeModal } from '../components/modals/AwardBadgeModal';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DashboardStatsRow } from '../components/dashboard/DashboardStatsRow';
 import { TopEmulationStars } from '../components/dashboard/TopEmulationStars';
-import { ReadOnlyDashboard } from '../components/dashboard/ReadOnlyDashboard';
 import { getRankedStudents } from '../utils/scoreCalculator';
 
 interface DashboardProps {
@@ -21,14 +20,11 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
   const rewardCatalog = useStore(state => state.rewards);
   const setPointModal = useStore(state => state.setPointModal);
   const showToast = useStore(state => state.showToast);
-  const userRole = useStore(state => state.userRole);
-  const setPinAuthModal = useStore(state => state.setPinAuthModal);
 
   const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
   const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
 
   const activeClass = useActiveClass();
-  const isParent = userRole === 'parent';
 
   // Calculate comprehensive statistics
   const totalStudents = activeClass?.students.length || 0;
@@ -104,11 +100,6 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
     );
   }
 
-  // Specialized Parent Read-Only Dashboard View
-  if (isParent) {
-    return <ReadOnlyDashboard onNavigateTab={onNavigateTab} />;
-  }
-
   return (
     <div className="space-y-6 sm:space-y-8 animate-fade-in pb-12">
       {/* 1. HERO DASHBOARD BANNER */}
@@ -131,32 +122,18 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
           iconBg="bg-purple-50"
           iconColor="text-purple-600"
           badgeText="Nhanh"
-          onClick={() => {
-            if (isParent) {
-              setPinAuthModal({
-                isOpen: true,
-                title: 'Chỉ Giáo viên chủ nhiệm mới có quyền điểm danh',
-                onSuccess: () => setIsAttendanceModalOpen(true)
-              });
-              return;
-            }
-            setIsAttendanceModalOpen(true);
-          }}
+          onClick={() => setIsAttendanceModalOpen(true)}
         />
 
         <QuickActionCard
-          title={isParent ? "Sổ nề nếp" : "Cộng điểm"}
-          description={isParent ? "Xem tiến độ các con" : "Ghi nhận việc tốt"}
+          title="Cộng điểm"
+          description="Ghi nhận việc tốt"
           icon="⭐"
           gradientClass="from-pink-500 to-rose-500"
           iconBg="bg-pink-50"
           iconColor="text-pink-600"
-          badgeText={isParent ? "Xem" : "+ Sao"}
+          badgeText="+ Sao"
           onClick={() => {
-            if (isParent) {
-              onNavigateTab?.('students');
-              return;
-            }
             if (activeClass.students.length > 0) {
               setPointModal({ studentId: activeClass.students[0].id, type: 'positive' });
             } else {

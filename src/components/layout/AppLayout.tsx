@@ -3,16 +3,10 @@ import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BottomNavigation } from './BottomNavigation';
 import { MobileDrawer } from './MobileDrawer';
-import { ParentNoticeBanner } from './ParentNoticeBanner';
 import { Toast } from '../ui/Toast';
-import { PinAuthModal } from '../modals/PinAuthModal';
 import { StudentEmulationReportModal } from '../modals/StudentEmulationReportModal';
 import { TeacherModal } from '../modals/TeacherModal';
 import { ClassModal } from '../modals/ClassModal';
-import { MobileSyncModal } from '../modals/MobileSyncModal';
-import { ShareParentModal } from '../modals/ShareParentModal';
-import { TeacherWorkspaceModal } from '../modals/TeacherWorkspaceModal';
-import { DepartmentModal } from '../modals/DepartmentModal';
 import { useStore } from '../../store';
 import { PRESET_GRADIENTS } from '../../utils/backgroundThemes';
 
@@ -35,16 +29,10 @@ export function AppLayout() {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
   const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showClassModal, setShowClassModal] = useState(false);
-  const [showMobileSyncModal, setShowMobileSyncModal] = useState(false);
-  const [showShareParentModal, setShowShareParentModal] = useState(false);
 
   const backgroundConfig = useStore(state => state.backgroundConfig);
   const studentReportModal = useStore(state => state.studentReportModal);
   const setStudentReportModal = useStore(state => state.setStudentReportModal);
-  const workspaceModal = useStore(state => state.workspaceModal);
-  const setWorkspaceModal = useStore(state => state.setWorkspaceModal);
-  const departmentModal = useStore(state => state.departmentModal);
-  const setDepartmentModal = useStore(state => state.setDepartmentModal);
 
   const backgroundStyle = useMemo(() => {
     if (!backgroundConfig) return { backgroundColor: '#F8F7FB' };
@@ -72,10 +60,10 @@ export function AppLayout() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard': return <Dashboard onNavigateTab={setActiveTab} />;
-      case 'students': return <Students />;
+      case 'students': return <Students onNavigateTab={setActiveTab} />;
       case 'groups': return <Groups />;
       case 'leaderboard': return <Leaderboard />;
-      case 'import': return <ImportData />;
+      case 'import': return <ImportData onNavigateTab={setActiveTab} />;
       case 'history': return <History />;
       case 'rewards': return <Rewards />;
       case 'reports': return <Reports />;
@@ -127,7 +115,6 @@ export function AppLayout() {
       
       {/* Main Content Area */}
       <div className="flex flex-col flex-1 h-screen relative z-10 min-w-0 overflow-hidden">
-        <ParentNoticeBanner />
         <Topbar 
           activeTab={activeTab} 
           onOpenMobileDrawer={() => setIsMobileDrawerOpen(true)}
@@ -149,9 +136,9 @@ export function AppLayout() {
             <span className="hidden sm:inline">Năm học 2026–2027</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-emerald-700 font-semibold flex items-center gap-1">
-              ☁️ Đồng bộ đám mây thời gian thực (Web & Điện thoại)
+              💾 Dữ liệu lưu trữ nội bộ trên máy tính (Chạy Offline 100%)
             </span>
           </div>
         </footer>
@@ -173,12 +160,9 @@ export function AppLayout() {
         setActiveTab={setActiveTab}
         onOpenTeacherModal={() => setShowTeacherModal(true)}
         onOpenClassModal={() => setShowClassModal(true)}
-        onOpenMobileSync={() => setShowMobileSyncModal(true)}
-        onOpenShareParent={() => setShowShareParentModal(true)}
       />
       
       <Toast />
-      <PinAuthModal />
       {studentReportModal && (
         <StudentEmulationReportModal 
           studentId={studentReportModal} 
@@ -194,22 +178,6 @@ export function AppLayout() {
       <ClassModal 
         isOpen={showClassModal} 
         onClose={() => setShowClassModal(false)} 
-      />
-      <MobileSyncModal 
-        isOpen={showMobileSyncModal} 
-        onClose={() => setShowMobileSyncModal(false)} 
-      />
-      <ShareParentModal 
-        isOpen={showShareParentModal} 
-        onClose={() => setShowShareParentModal(false)} 
-      />
-      <TeacherWorkspaceModal 
-        isOpen={workspaceModal} 
-        onClose={() => setWorkspaceModal(false)} 
-      />
-      <DepartmentModal 
-        isOpen={departmentModal} 
-        onClose={() => setDepartmentModal(false)} 
       />
     </div>
   );

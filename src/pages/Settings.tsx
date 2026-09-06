@@ -3,19 +3,18 @@ import { Settings as SettingsIcon } from 'lucide-react';
 import BrandingSettings from '../components/settings/BrandingSettings';
 import BackgroundSettings from '../components/settings/BackgroundSettings';
 import TeacherSettings from '../components/settings/TeacherSettings';
-import TeacherWorkspacesSettingsSection from '../components/settings/TeacherWorkspacesSettingsSection';
-import ParentShareSecuritySettings from '../components/settings/ParentShareSecuritySettings';
 import ClassSettings from '../components/settings/ClassSettings';
 import ClassAvatarGallerySection from '../components/settings/ClassAvatarGallerySection';
 import PointCriteriaSection from '../components/settings/PointCriteriaSection';
+import BadgesSettingsSection from '../components/settings/BadgesSettingsSection';
 import RewardsSettingsSection from '../components/settings/RewardsSettingsSection';
 import ResetProgressSection from '../components/settings/ResetProgressSection';
 import DataBackupSection from '../components/settings/DataBackupSection';
-import CloudSyncSettingsSection from '../components/settings/CloudSyncSettingsSection';
 
 import { ClassModal } from '../components/modals/ClassModal';
 import { CriteriaModal } from '../components/modals/CriteriaModal';
 import { AvatarModal } from '../components/modals/AvatarModal';
+import { BadgeModal } from '../components/modals/BadgeModal';
 import { RewardModal } from '../components/modals/RewardModal';
 import { CoverModal } from '../components/modals/CoverModal';
 import { ResetProgressModal } from '../components/modals/ResetProgressModal';
@@ -25,6 +24,9 @@ export default function Settings() {
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
 
   const [avatarGalleryClassId, setAvatarGalleryClassId] = useState<string | null>(null);
+
+  const [showBadgeModal, setShowBadgeModal] = useState(false);
+  const [editingBadgeId, setEditingBadgeId] = useState<string | null>(null);
 
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [editingRewardId, setEditingRewardId] = useState<string | null>(null);
@@ -59,12 +61,6 @@ export default function Settings() {
       {/* 3. Thông Tin Giáo Viên */}
       <TeacherSettings />
 
-      {/* 3.2. Không Gian Nhiều Giáo Viên Độc Lập */}
-      <TeacherWorkspacesSettingsSection />
-
-      {/* 3.5. Phân Quyền Phụ Huynh & Mã PIN Giáo Viên Chủ Nhiệm */}
-      <ParentShareSecuritySettings />
-
       {/* 4. Quản Lý Lớp Học */}
       <ClassSettings 
         onAddClass={() => {
@@ -96,7 +92,19 @@ export default function Settings() {
         }}
       />
 
-      {/* 7. Quản Lý Kho Phần Thưởng */}
+      {/* 7. Quản Lý Huy Hiệu Danh Dự */}
+      <BadgesSettingsSection 
+        onAddBadge={() => {
+          setEditingBadgeId(null);
+          setShowBadgeModal(true);
+        }}
+        onEditBadge={(id) => {
+          setEditingBadgeId(id);
+          setShowBadgeModal(true);
+        }}
+      />
+
+      {/* 8. Quản Lý Kho Phần Thưởng */}
       <RewardsSettingsSection 
         onAddReward={() => {
           setEditingRewardId(null);
@@ -108,16 +116,13 @@ export default function Settings() {
         }}
       />
 
-      {/* 8. Trung Tâm Reset & Làm Mới Dữ Liệu Thi Đua */}
+      {/* 9. Trung Tâm Reset & Làm Mới Dữ Liệu Thi Đua */}
       <ResetProgressSection 
         onOpenResetModal={(tab) => {
           setResetModalTab(tab);
           setShowResetModal(true);
         }}
       />
-
-      {/* 9. Đồng Bộ Đám Mây & Điện Thoại */}
-      <CloudSyncSettingsSection />
 
       {/* 10. Sao Lưu & Phục Hồi Dữ Liệu */}
       <DataBackupSection />
@@ -140,6 +145,15 @@ export default function Settings() {
         }}
         editingCriteriaId={editingCriteriaId}
         defaultType={criteriaModalType}
+      />
+
+      <BadgeModal
+        isOpen={showBadgeModal}
+        onClose={() => {
+          setShowBadgeModal(false);
+          setEditingBadgeId(null);
+        }}
+        editingBadgeId={editingBadgeId}
       />
 
       <RewardModal

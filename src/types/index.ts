@@ -139,41 +139,6 @@ export interface BackgroundConfig {
   blur?: number; // 0 to 10px
 }
 
-export interface TeacherWorkspace {
-  id: string; // e.g. 'ws_teacher_1', 'ws_teacher_2'
-  name: string; // e.g. 'Cô Phương Anh', 'Thầy Minh Đức'
-  avatarUrl?: string;
-  schoolName: string;
-  grade: string;
-  subject: string;
-  academicYear: string;
-  homeroomClass: string;
-  pin: string; // e.g. '1234'
-  appTitle?: string;
-  appSlogan?: string;
-  headerCoverUrl?: string;
-  backgroundConfig?: BackgroundConfig;
-  isDepartmentLeader?: boolean;
-  departmentName?: string;
-  classes: ClassData[];
-  activeClassId: string | null;
-  badges?: Badge[];
-  rewards?: Reward[];
-  customRewardIcons?: CustomRewardIcon[];
-  levels?: Level[];
-  pointCriteria?: PointCriteria[];
-  createdAt?: number;
-  updatedAt?: number;
-}
-
-export interface DepartmentInfo {
-  name: string; // e.g. 'Tổ Chuyên Môn Khối 2'
-  schoolName: string;
-  leaderName: string; // e.g. 'Cô Phương Anh'
-  leaderPin: string; // e.g. '1234'
-  academicYear: string;
-}
-
 export interface AppState {
   appTitle?: string;
   appSlogan?: string;
@@ -188,42 +153,10 @@ export interface AppState {
   pointCriteria: PointCriteria[];
   soundEnabled: boolean;
   presentationMode: boolean;
-  isCloudSynced?: boolean;
-
-  // Multi-Teacher Workspaces & Department
-  workspaces: TeacherWorkspace[];
-  activeWorkspaceId: string;
-  workspaceModal: boolean;
-  departmentModal: boolean;
-  departmentInfo?: DepartmentInfo;
-  
-  // Security & Parent Portal Role
-  userRole: 'teacher' | 'parent';
-  teacherPin: string; // Default '1234'
-  isTeacherUnlocked: boolean;
-  selectedParentStudentId?: string | null;
   studentReportModal: string | null; // Student ID to view detailed report
-  pinAuthModal: { isOpen: boolean; title?: string; onSuccess?: () => void } | null;
 
-  // Workspace & Department Actions
-  setWorkspaceModal: (isOpen: boolean) => void;
-  setDepartmentModal: (isOpen: boolean) => void;
-  setDepartmentInfo: (info: Partial<DepartmentInfo>) => void;
-  syncStandardToAllWorkspaces: () => void;
-  initializeDepartment10Classes: () => void;
-  createWorkspace: (data: Partial<TeacherWorkspace>, options?: { copyCurrentTemplates?: boolean; addDemoClass?: boolean }) => string;
-  switchWorkspace: (workspaceId: string, bypassPin?: boolean) => boolean;
-  updateWorkspace: (workspaceId: string, data: Partial<TeacherWorkspace>) => void;
-  deleteWorkspace: (workspaceId: string) => void;
-
-  // Role Actions
-  setUserRole: (role: 'teacher' | 'parent') => void;
-  setTeacherPin: (pin: string) => void;
-  unlockTeacher: (pin: string) => boolean;
-  lockTeacher: () => void;
-  setSelectedParentStudentId: (studentId: string | null) => void;
+  // Modal Actions
   setStudentReportModal: (studentId: string | null) => void;
-  setPinAuthModal: (modal: { isOpen: boolean; title?: string; onSuccess?: () => void } | null) => void;
   
   // Actions
   setAppBranding: (branding: { appTitle: string; appSlogan: string; headerCoverUrl?: string }) => void;
@@ -262,6 +195,10 @@ export interface AppState {
   resetPointCriteria: () => void;
   
   awardBadge: (studentId: string, badgeId: string) => void;
+  addBadge: (badge: Omit<Badge, 'id'>) => void;
+  updateBadge: (id: string, data: Partial<Badge>) => void;
+  deleteBadge: (id: string) => void;
+  resetBadges: () => void;
   redeemReward: (studentId: string, rewardId: string) => void;
   
   // Reward Actions
@@ -275,7 +212,10 @@ export interface AppState {
   deleteReward: (id: string) => void;
   resetRewards: () => void;
   
-  importStudents: (students: Array<{ name: string; gender: Gender; avatarId: string; groupId?: string }>) => void;
+  importStudents: (
+    students: Array<{ name: string; gender: Gender; avatarId: string; groupId?: string }>,
+    options?: { replace?: boolean; classId?: string }
+  ) => void;
   saveAttendance: (classId: string, record: Omit<AttendanceRecord, 'id' | 'timestamp'>) => void;
   
   toggleSound: () => void;

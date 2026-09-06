@@ -31,9 +31,7 @@ export default function Rewards() {
   const resetRewards = useStore(state => state.resetRewards);
   const soundEnabled = useStore(state => state.soundEnabled);
   const showToast = useStore(state => state.showToast);
-  const userRole = useStore(state => state.userRole);
 
-  const isParent = userRole === 'parent';
   const [activeTab, setActiveTab] = useState<'store' | 'history'>('store');
   const [selectedReward, setSelectedReward] = useState<Reward | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
@@ -181,55 +179,47 @@ export default function Rewards() {
 
         {/* Action Buttons Top */}
         <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
-          {!isParent ? (
-            <>
-              {/* Reward Icon Gallery button */}
-              <button
-                onClick={() => setIsIconGalleryOpen(true)}
-                className="px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border border-pink-200 bg-pink-50/80 hover:bg-pink-100 text-pink-700 shadow-2xs cursor-pointer"
-                title="Mở kho lưu trữ và nạp thêm icon ngoài"
-              >
-                <FolderHeart size={15} />
-                <span>Kho Icon ({customRewardIcons.length})</span>
-              </button>
+          {/* Reward Icon Gallery button */}
+          <button
+            onClick={() => setIsIconGalleryOpen(true)}
+            className="px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border border-pink-200 bg-pink-50/80 hover:bg-pink-100 text-pink-700 shadow-2xs cursor-pointer"
+            title="Mở kho lưu trữ và nạp thêm icon ngoài"
+          >
+            <FolderHeart size={15} />
+            <span>Kho Icon ({customRewardIcons.length})</span>
+          </button>
 
-              <button
-                onClick={() => setIsManageMode(!isManageMode)}
-                className={cn(
-                  "px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border shadow-2xs cursor-pointer",
-                  isManageMode 
-                    ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-amber-200" 
-                    : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
-                )}
-              >
-                <SlidersHorizontal size={15} />
-                {isManageMode ? 'Xong sửa' : '⚙️ Sửa quà'}
-              </button>
+          <button
+            onClick={() => setIsManageMode(!isManageMode)}
+            className={cn(
+              "px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border shadow-2xs cursor-pointer",
+              isManageMode 
+                ? "bg-amber-500 hover:bg-amber-600 text-white border-amber-500 shadow-amber-200" 
+                : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+            )}
+          >
+            <SlidersHorizontal size={15} />
+            {isManageMode ? 'Xong sửa' : '⚙️ Sửa quà'}
+          </button>
 
-              <button
-                onClick={() => {
-                  setResetModalTab('rewards');
-                  setShowResetProgressModal(true);
-                }}
-                className="px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 shadow-2xs cursor-pointer"
-                title="Reset lịch sử đổi quà hoặc khôi phục danh mục quà mẫu"
-              >
-                <RotateCcw size={15} />
-                <span>Reset đổi</span>
-              </button>
+          <button
+            onClick={() => {
+              setResetModalTab('rewards');
+              setShowResetProgressModal(true);
+            }}
+            className="px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 shadow-2xs cursor-pointer"
+            title="Reset lịch sử đổi quà hoặc khôi phục danh mục quà mẫu"
+          >
+            <RotateCcw size={15} />
+            <span>Reset đổi</span>
+          </button>
 
-              <button
-                onClick={handleOpenAddModal}
-                className="flex-1 md:flex-none px-4 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-black text-xs shadow-md shadow-pink-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
-              >
-                <Plus size={16} /> Thêm quà mới
-              </button>
-            </>
-          ) : (
-            <div className="px-3.5 py-2 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold">
-              🛡️ Chế độ an toàn cho Phụ huynh (Chỉ xem)
-            </div>
-          )}
+          <button
+            onClick={handleOpenAddModal}
+            className="flex-1 md:flex-none px-4 py-2.5 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-black text-xs shadow-md shadow-pink-500/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <Plus size={16} /> Thêm quà mới
+          </button>
         </div>
       </div>
 
@@ -371,34 +361,32 @@ export default function Rewards() {
                     )}
                   >
                     {/* Top Action Badge (Edit & Hide) */}
-                    {!isParent && (
-                      <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10">
-                        {isManageMode && (
-                          <button
-                            type="button"
-                            onClick={(e) => handleToggleActive(reward, e)}
-                            title={isHidden ? 'Mở lại phần thưởng' : 'Ẩn phần thưởng'}
-                            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
-                          >
-                            {isHidden ? <EyeOff size={13} className="text-amber-600" /> : <Eye size={13} />}
-                          </button>
-                        )}
-
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1 z-10">
+                      {isManageMode && (
                         <button
                           type="button"
-                          onClick={(e) => handleOpenEditModal(reward, e)}
-                          title="Chỉnh sửa phần thưởng"
-                          className={cn(
-                            "w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-2xs cursor-pointer",
-                            isManageMode
-                              ? "bg-pink-500 text-white hover:bg-pink-600"
-                              : "opacity-0 group-hover:opacity-100 bg-slate-100 hover:bg-pink-50 text-slate-600 hover:text-pink-600"
-                          )}
+                          onClick={(e) => handleToggleActive(reward, e)}
+                          title={isHidden ? 'Mở lại phần thưởng' : 'Ẩn phần thưởng'}
+                          className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors shadow-2xs cursor-pointer"
                         >
-                          <Edit3 size={13} />
+                          {isHidden ? <EyeOff size={13} className="text-amber-600" /> : <Eye size={13} />}
                         </button>
-                      </div>
-                    )}
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenEditModal(reward, e)}
+                        title="Chỉnh sửa phần thưởng"
+                        className={cn(
+                          "w-7 h-7 rounded-full flex items-center justify-center transition-all shadow-2xs cursor-pointer",
+                          isManageMode
+                            ? "bg-pink-500 text-white hover:bg-pink-600"
+                            : "opacity-0 group-hover:opacity-100 bg-slate-100 hover:bg-pink-50 text-slate-600 hover:text-pink-600"
+                        )}
+                      >
+                        <Edit3 size={13} />
+                      </button>
+                    </div>
 
                     {isSelected && (
                       <div className="absolute top-2.5 left-2.5 px-2 py-0.5 bg-pink-600 text-white rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-2xs">
@@ -447,7 +435,7 @@ export default function Rewards() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold text-pink-600 uppercase tracking-wider">
-                        {isParent ? 'Chi tiết phần thưởng:' : 'Đang tiến hành đổi quà:'}
+                        Đang tiến hành đổi quà:
                       </span>
                       <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs font-black">
                         Cần {selectedReward.cost} điểm sao
@@ -458,15 +446,13 @@ export default function Rewards() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  {!isParent && (
-                    <button
-                      type="button"
-                      onClick={() => handleOpenEditModal(selectedReward)}
-                      className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-pink-600 bg-slate-100 hover:bg-pink-50 rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <Edit3 size={13} /> Sửa quà
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(selectedReward)}
+                    className="px-3 py-1.5 text-xs font-bold text-slate-600 hover:text-pink-600 bg-slate-100 hover:bg-pink-50 rounded-xl flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Edit3 size={13} /> Sửa quà
+                  </button>
                   <button
                     type="button"
                     onClick={() => setSelectedReward(null)}
@@ -477,65 +463,56 @@ export default function Rewards() {
                 </div>
               </div>
 
-              {/* Redeem Form or Parent Info Notice */}
-              {!isParent ? (
-                <>
-                  <div className="pt-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
-                    <div className="md:col-span-8">
-                      <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
-                        1. Chọn học sinh đổi phần thưởng này:
-                      </label>
-                      <select
-                        value={selectedStudentId}
-                        onChange={(e) => setSelectedStudentId(e.target.value)}
-                        className="w-full bg-slate-50 border-2 border-slate-200 hover:border-pink-300 focus:border-pink-500 text-slate-800 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none transition-all shadow-2xs cursor-pointer"
-                      >
-                        <option value="">-- Nhấp để chọn học sinh trong {activeClass.name} --</option>
-                        {activeClass.students.map((student) => {
-                          const isAffordable = student.points >= selectedReward.cost;
-                          return (
-                            <option
-                              key={student.id}
-                              value={student.id}
-                              disabled={!isAffordable}
-                              className={isAffordable ? 'font-bold' : 'text-slate-400'}
-                            >
-                              {student.name} • Đang có {student.points} ⭐ {isAffordable ? ' (Đủ điều kiện)' : ` (Thiếu ${selectedReward.cost - student.points} sao)`}
-                            </option>
-                          );
-                        })}
-                      </select>
-                    </div>
+              {/* Redeem Form */}
+              <div className="pt-5 grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <div className="md:col-span-8">
+                  <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
+                    1. Chọn học sinh đổi phần thưởng này:
+                  </label>
+                  <select
+                    value={selectedStudentId}
+                    onChange={(e) => setSelectedStudentId(e.target.value)}
+                    className="w-full bg-slate-50 border-2 border-slate-200 hover:border-pink-300 focus:border-pink-500 text-slate-800 rounded-2xl px-4 py-3 font-bold text-sm focus:outline-none transition-all shadow-2xs cursor-pointer"
+                  >
+                    <option value="">-- Nhấp để chọn học sinh trong {activeClass.name} --</option>
+                    {activeClass.students.map((student) => {
+                      const isAffordable = student.points >= selectedReward.cost;
+                      return (
+                        <option
+                          key={student.id}
+                          value={student.id}
+                          disabled={!isAffordable}
+                          className={isAffordable ? 'font-bold' : 'text-slate-400'}
+                        >
+                          {student.name} • Đang có {student.points} ⭐ {isAffordable ? ' (Đủ điều kiện)' : ` (Thiếu ${selectedReward.cost - student.points} sao)`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
 
-                    <div className="md:col-span-4 flex items-end">
-                      <button
-                        onClick={handleRedeem}
-                        disabled={!selectedStudentId}
-                        className="w-full py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-black text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
-                      >
-                        <Check size={18} /> Xác nhận Đổi Thưởng
-                      </button>
-                    </div>
+                <div className="md:col-span-4 flex items-end">
+                  <button
+                    onClick={handleRedeem}
+                    disabled={!selectedStudentId}
+                    className="w-full py-3.5 bg-gradient-to-r from-pink-500 via-rose-500 to-amber-500 hover:from-pink-600 hover:to-rose-600 text-white rounded-2xl font-black text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg shadow-pink-500/20 flex items-center justify-center gap-2 transform active:scale-98 cursor-pointer"
+                  >
+                    <Check size={18} /> Xác nhận Đổi Thưởng
+                  </button>
+                </div>
+              </div>
+
+              {selectedStudent && (
+                <div className="mt-4 p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-slate-700">{selectedStudent.name}:</span>
+                    <span>Hiện tại: <strong>{selectedStudent.points} ⭐</strong></span>
+                    <ChevronRight size={14} className="text-slate-400" />
+                    <span>Sau khi đổi: <strong className="text-pink-600">{selectedStudent.points - selectedReward.cost} ⭐</strong></span>
                   </div>
-
-                  {selectedStudent && (
-                    <div className="mt-4 p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-700">{selectedStudent.name}:</span>
-                        <span>Hiện tại: <strong>{selectedStudent.points} ⭐</strong></span>
-                        <ChevronRight size={14} className="text-slate-400" />
-                        <span>Sau khi đổi: <strong className="text-pink-600">{selectedStudent.points - selectedReward.cost} ⭐</strong></span>
-                      </div>
-                      <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
-                        ✓ Đủ điểm đổi quà
-                      </span>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="pt-4 text-xs font-semibold text-slate-600 bg-purple-50/50 p-4 rounded-2xl border border-purple-100 flex items-center justify-between">
-                  <span>💡 <strong>Dành cho Phụ huynh:</strong> Học sinh tích lũy đủ <strong>{selectedReward.cost} sao</strong> sẽ được Giáo viên đổi món quà này tại lớp.</span>
-                  <span className="text-purple-700 font-bold">Chỉ xem</span>
+                  <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-md">
+                    ✓ Đủ điểm đổi quà
+                  </span>
                 </div>
               )}
             </div>

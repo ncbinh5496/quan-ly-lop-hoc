@@ -11,7 +11,6 @@ export default function Groups() {
   const assignStudentToGroup = useStore(state => state.assignStudentToGroup);
   const setPointModal = useStore(state => state.setPointModal);
   const showToast = useStore(state => state.showToast);
-  const userRole = useStore(state => state.userRole);
 
   const [newGroupName, setNewGroupName] = useState('');
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null);
@@ -20,7 +19,6 @@ export default function Groups() {
   const [groupToDelete, setGroupToDelete] = useState<{ id: string; name: string } | null>(null);
   
   const activeClass = useActiveClass();
-  const isParent = userRole === 'parent';
 
   // Group students by group ID and collect unassigned in a single pass
   const { unassignedStudents, groupStudentsMap } = useMemo(() => {
@@ -101,41 +99,33 @@ export default function Groups() {
           </div>
         </div>
 
-        {!isParent ? (
-          <button 
-            onClick={() => setIsRandomModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-2xl font-black text-xs transition-all shadow-md shadow-purple-500/20 hover:scale-105 active:scale-95 cursor-pointer"
-          >
-            <Shuffle size={15} /> Chia tổ ngẫu nhiên thông minh
-          </button>
-        ) : (
-          <div className="px-3.5 py-2 rounded-2xl bg-purple-50 border border-purple-200 text-purple-700 text-xs font-bold">
-            🛡️ Chế độ an toàn cho Phụ huynh (Chỉ xem)
-          </div>
-        )}
+        <button 
+          onClick={() => setIsRandomModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 text-white rounded-2xl font-black text-xs transition-all shadow-md shadow-purple-500/20 hover:scale-105 active:scale-95 cursor-pointer"
+        >
+          <Shuffle size={15} /> Chia tổ ngẫu nhiên thông minh
+        </button>
       </div>
 
-      {/* Add New Group Input Card (Teacher Only) */}
-      {!isParent && (
-        <div className="bg-white/95 rounded-[22px] p-4 shadow-2xs border border-purple-100/80 flex items-center gap-3 max-w-md">
-          <input 
-            type="text" 
-            placeholder="Tên tổ mới (ví dụ: Tổ 1 - Sóc Nâu)..." 
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-            className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-slate-400"
-            onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
-          />
-          <button 
-            onClick={handleAddGroup}
-            disabled={!newGroupName.trim()}
-            className="p-2.5 bg-purple-600 text-white hover:bg-purple-700 rounded-xl disabled:opacity-50 transition-all shadow-2xs cursor-pointer active:scale-95"
-            title="Tạo tổ"
-          >
-            <Plus size={18} />
-          </button>
-        </div>
-      )}
+      {/* Add New Group Input Card */}
+      <div className="bg-white/95 rounded-[22px] p-4 shadow-2xs border border-purple-100/80 flex items-center gap-3 max-w-md">
+        <input 
+          type="text" 
+          placeholder="Tên tổ mới (ví dụ: Tổ 1 - Sóc Nâu)..." 
+          value={newGroupName}
+          onChange={(e) => setNewGroupName(e.target.value)}
+          className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400 placeholder-slate-400"
+          onKeyDown={(e) => e.key === 'Enter' && handleAddGroup()}
+        />
+        <button 
+          onClick={handleAddGroup}
+          disabled={!newGroupName.trim()}
+          className="p-2.5 bg-purple-600 text-white hover:bg-purple-700 rounded-xl disabled:opacity-50 transition-all shadow-2xs cursor-pointer active:scale-95"
+          title="Tạo tổ"
+        >
+          <Plus size={18} />
+        </button>
+      </div>
 
       {/* Groups Columns Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -156,7 +146,7 @@ export default function Groups() {
                     onAddPoint={() => setPointModal({ studentId: student.id, type: 'positive' })}
                     onMinusPoint={() => setPointModal({ studentId: student.id, type: 'negative' })}
                   />
-                  {!isParent && activeClass.groups.length > 0 && (
+                  {activeClass.groups.length > 0 && (
                     <select 
                       className="absolute top-2 right-2 bg-white/95 border border-purple-200 text-[11px] rounded-xl px-2 py-1 focus:outline-none z-10 font-bold text-purple-700 shadow-2xs cursor-pointer"
                       onChange={(e) => {
@@ -184,7 +174,7 @@ export default function Groups() {
           return (
             <div key={group.id} className="bg-white/95 rounded-[28px] p-5 border border-purple-100 shadow-[0_8px_24px_rgba(124,58,237,0.04)] relative group">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-purple-50">
-                {editingGroupId === group.id && !isParent ? (
+                {editingGroupId === group.id ? (
                   <div className="flex items-center gap-2 flex-1 mr-3">
                     <input 
                       type="text" 
@@ -200,15 +190,13 @@ export default function Groups() {
                   <div>
                     <h3 className="font-black text-slate-800 text-base flex items-center gap-2">
                       {group.name}
-                      {!isParent && (
-                        <button 
-                          onClick={() => { setEditingGroupId(group.id); setEditingName(group.name); }}
-                          className="text-slate-300 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                          title="Đổi tên tổ"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                      )}
+                      <button 
+                        onClick={() => { setEditingGroupId(group.id); setEditingName(group.name); }}
+                        className="text-slate-300 hover:text-purple-600 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        title="Đổi tên tổ"
+                      >
+                        <Pencil size={13} />
+                      </button>
                     </h3>
                     <div className="text-xs font-bold text-purple-600 mt-0.5">
                       {groupStudents.length} thành viên • {totalPoints} sao ⭐
@@ -216,15 +204,13 @@ export default function Groups() {
                   </div>
                 )}
                 
-                {!isParent && (
-                  <button 
-                    onClick={() => setGroupToDelete({ id: group.id, name: group.name })}
-                    className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
-                    title="Xóa tổ này"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
+                <button 
+                  onClick={() => setGroupToDelete({ id: group.id, name: group.name })}
+                  className="p-1.5 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer"
+                  title="Xóa tổ này"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
 
               <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
@@ -237,17 +223,15 @@ export default function Groups() {
                       onAddPoint={() => setPointModal({ studentId: student.id, type: 'positive' })}
                       onMinusPoint={() => setPointModal({ studentId: student.id, type: 'negative' })}
                     />
-                    {!isParent && (
-                      <button 
-                        onClick={() => {
-                          assignStudentToGroup(student.id, undefined);
-                          showToast(`Đã đưa ${student.name} ra khỏi tổ`);
-                        }}
-                        className="absolute top-3 right-16 text-[10px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition-colors z-10 font-bold cursor-pointer"
-                      >
-                        Rời tổ
-                      </button>
-                    )}
+                    <button 
+                      onClick={() => {
+                        assignStudentToGroup(student.id, undefined);
+                        showToast(`Đã đưa ${student.name} ra khỏi tổ`);
+                      }}
+                      className="absolute top-3 right-16 text-[10px] bg-rose-50 text-rose-600 hover:bg-rose-100 px-2 py-1 rounded-lg transition-colors z-10 font-bold cursor-pointer"
+                    >
+                      Rời tổ
+                    </button>
                   </div>
                 ))}
                 {groupStudents.length === 0 && (
@@ -292,13 +276,11 @@ export default function Groups() {
         </div>
       )}
 
-      {/* Random Group Generator Modal (Teacher Only) */}
-      {!isParent && (
-        <RandomGroupModal 
-          isOpen={isRandomModalOpen} 
-          onClose={() => setIsRandomModalOpen(false)} 
-        />
-      )}
+      {/* Random Group Generator Modal */}
+      <RandomGroupModal 
+        isOpen={isRandomModalOpen} 
+        onClose={() => setIsRandomModalOpen(false)} 
+      />
     </div>
   );
 }

@@ -7,17 +7,12 @@ import {
   Volume2, 
   VolumeX, 
   Sparkles,
-  Smartphone,
-  Share2,
-  Lock,
   Menu
 } from 'lucide-react';
 import { TeacherModal } from '../modals/TeacherModal';
 import { ClassModal } from '../modals/ClassModal';
 import { CoverModal } from '../modals/CoverModal';
 import { ResetProgressModal } from '../modals/ResetProgressModal';
-import { MobileSyncModal } from '../modals/MobileSyncModal';
-import { ShareParentModal } from '../modals/ShareParentModal';
 
 interface TopbarProps {
   activeTab?: string;
@@ -33,18 +28,11 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
   const soundEnabled = useStore(state => state.soundEnabled);
   const toggleSound = useStore(state => state.toggleSound);
   const undoLastTransaction = useStore(state => state.undoLastTransaction);
-  const userRole = useStore(state => state.userRole);
-  const setUserRole = useStore(state => state.setUserRole);
-  const setPinAuthModal = useStore(state => state.setPinAuthModal);
-  const departmentInfo = useStore(state => state.departmentInfo);
-  const setDepartmentModal = useStore(state => state.setDepartmentModal);
 
   const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showClassModal, setShowClassModal] = useState(false);
   const [showCoverModal, setShowCoverModal] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
-  const [showMobileSyncModal, setShowMobileSyncModal] = useState(false);
-  const [showShareParentModal, setShowShareParentModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -169,51 +157,15 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
             />
           </div>
 
-          {/* Share with Parents Button */}
-          <button
-            onClick={() => {
-              if (userRole === 'parent') {
-                setPinAuthModal({
-                  isOpen: true,
-                  title: 'Đăng nhập Giáo viên để chia sẻ liên kết',
-                  onSuccess: () => setShowShareParentModal(true)
-                });
-              } else {
-                setShowShareParentModal(true);
-              }
-            }}
-            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs sm:text-sm font-black shadow-md shadow-purple-500/20 transition-all cursor-pointer group active:scale-95 shrink-0 min-h-[40px] sm:min-h-[44px]"
-            title="Lấy link & mã QR gửi phụ huynh xem sổ nề nếp và kết quả thi đua"
-          >
-            <Share2 size={15} className="group-hover:scale-110 transition-transform text-amber-300 shrink-0" />
-            <span className="hidden sm:inline">Gửi Phụ Huynh</span>
-            <span className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-black text-amber-200 uppercase shrink-0">
-              QR
-            </span>
-          </button>
-
-          {/* Sync Mobile Button (Large screens) */}
-          <button
-            onClick={() => setShowMobileSyncModal(true)}
-            className="hidden 2xl:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-200 text-emerald-800 text-xs sm:text-sm font-black shadow-2xs transition-all cursor-pointer group active:scale-95 shrink-0 min-h-[40px] sm:min-h-[44px]"
-            title="Mở ứng dụng trên điện thoại và đồng bộ thời gian thực"
-          >
-            <Smartphone size={15} className="text-emerald-600 group-hover:scale-110 transition-transform shrink-0" />
-            <span>App ĐT</span>
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-          </button>
-
           {/* Quick Tools: Undo + Sound Toggle */}
-          <div className="hidden sm:flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-purple-100/80 shadow-2xs shrink-0">
-            {userRole === 'teacher' && (
-              <button
-                onClick={undoLastTransaction}
-                className="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0"
-                title="Hoàn tác điểm gần nhất"
-              >
-                <RotateCcw size={14} />
-              </button>
-            )}
+          <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-full border border-purple-100/80 shadow-2xs shrink-0">
+            <button
+              onClick={undoLastTransaction}
+              className="w-8 h-8 rounded-full bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 flex items-center justify-center transition-all shadow-2xs active:scale-95 cursor-pointer shrink-0"
+              title="Hoàn tác điểm gần nhất"
+            >
+              <RotateCcw size={14} />
+            </button>
 
             <button
               onClick={toggleSound}
@@ -272,44 +224,28 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
             )}
           </div>
 
-          {/* Teacher / Parent Profile Trigger Pill */}
-          {userRole === 'teacher' ? (
-            <div
-              onClick={() => setShowTeacherModal(true)}
-              className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200/80 cursor-pointer transition-all shadow-xs group shrink-0 min-h-[40px] sm:min-h-[44px]"
-              title="Xem & chỉnh sửa hồ sơ giáo viên chủ nhiệm"
-            >
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs sm:text-sm font-black ring-2 ring-white shadow-xs overflow-hidden shrink-0">
-                {teacher?.avatarUrl ? (
-                  <img src={teacher.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <span>👩‍🏫</span>
-                )}
-              </div>
-              <div className="hidden xl:block text-left max-w-[120px]">
-                <p className="text-xs sm:text-sm font-black text-slate-800 leading-none group-hover:text-purple-700 transition-colors truncate">
-                  {teacher?.name || 'Cô Phương Anh'}
-                </p>
-                <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 leading-tight mt-1 truncate">
-                  {activeClass?.name || 'Lớp 2A6'}
-                </p>
-              </div>
+          {/* Teacher Profile Trigger Pill */}
+          <div
+            onClick={() => setShowTeacherModal(true)}
+            className="flex items-center gap-2 pl-1.5 pr-3 py-1.5 rounded-full bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-200/80 cursor-pointer transition-all shadow-xs group shrink-0 min-h-[40px] sm:min-h-[44px]"
+            title="Xem & chỉnh sửa hồ sơ giáo viên chủ nhiệm"
+          >
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs sm:text-sm font-black ring-2 ring-white shadow-xs overflow-hidden shrink-0">
+              {teacher?.avatarUrl ? (
+                <img src={teacher.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>👩‍🏫</span>
+              )}
             </div>
-          ) : (
-            <button
-              onClick={() => setPinAuthModal({
-                isOpen: true,
-                title: 'Đăng nhập Giáo viên chủ nhiệm',
-                onSuccess: () => setUserRole('teacher')
-              })}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-purple-100 hover:bg-purple-200 border border-purple-300 text-purple-900 text-xs sm:text-sm font-black transition-all cursor-pointer shrink-0 min-h-[40px] sm:min-h-[44px]"
-              title="Đang ở chế độ Phụ huynh (Chỉ đọc). Bấm để đăng nhập Giáo viên."
-            >
-              <Lock size={14} className="text-purple-700" />
-              <span className="hidden sm:inline">Phụ Huynh</span>
-              <span className="sm:hidden">Xem điểm</span>
-            </button>
-          )}
+            <div className="hidden xl:block text-left max-w-[120px]">
+              <p className="text-xs sm:text-sm font-black text-slate-800 leading-none group-hover:text-purple-700 transition-colors truncate">
+                {teacher?.name || 'Cô Phương Anh'}
+              </p>
+              <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 leading-tight mt-1 truncate">
+                {activeClass?.name || 'Lớp 2A6'}
+              </p>
+            </div>
+          </div>
         </div>
       </header>
 
@@ -332,16 +268,6 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
       <ResetProgressModal
         isOpen={showResetModal}
         onClose={() => setShowResetModal(false)}
-      />
-
-      <MobileSyncModal
-        isOpen={showMobileSyncModal}
-        onClose={() => setShowMobileSyncModal(false)}
-      />
-
-      <ShareParentModal
-        isOpen={showShareParentModal}
-        onClose={() => setShowShareParentModal(false)}
       />
     </>
   );

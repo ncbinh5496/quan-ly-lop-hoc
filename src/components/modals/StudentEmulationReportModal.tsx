@@ -29,7 +29,7 @@ interface StudentEmulationReportModalProps {
 }
 
 export function StudentEmulationReportModal({ studentId, onClose }: StudentEmulationReportModalProps) {
-  const { classes, activeClassId, levels, badges: allBadges, rewards, teacher, userRole, setPinAuthModal } = useStore();
+  const { classes, activeClassId, levels, badges: allBadges, rewards, teacher } = useStore();
   const [filterType, setFilterType] = useState<'all' | 'positive' | 'negative'>('all');
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -433,21 +433,10 @@ export function StudentEmulationReportModal({ studentId, onClose }: StudentEmula
         {/* MODAL FOOTER */}
         <div className="p-4 bg-white border-t border-slate-100 flex items-center justify-between gap-3 shrink-0">
           <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-            {userRole === 'parent' ? '👨‍👩‍👧 Bạn đang xem ở Chế độ Phụ huynh (Chỉ đọc)' : '👩‍🏫 Quyền hạn: Giáo viên chủ nhiệm'}
+            👩‍🏫 Quyền hạn: Giáo viên chủ nhiệm
           </p>
 
           <div className="flex items-center gap-2 ml-auto">
-            {userRole === 'parent' && (
-              <button
-                onClick={() => {
-                  onClose();
-                  setPinAuthModal({ isOpen: true, title: 'Đăng nhập Giáo viên để chỉnh sửa' });
-                }}
-                className="px-3.5 py-2 rounded-xl text-xs font-bold text-purple-700 bg-purple-50 hover:bg-purple-100 transition-colors cursor-pointer"
-              >
-                Giáo viên đăng nhập
-              </button>
-            )}
             <button
               onClick={onClose}
               className="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-md shadow-purple-500/20 transition-all cursor-pointer active:scale-95"

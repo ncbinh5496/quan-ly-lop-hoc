@@ -1,4 +1,51 @@
-import { Badge, Level, PointCriteria, Reward, Student } from '../types';
+import { Badge, ClassData, Level, PointCriteria, Reward, Student, Teacher } from '../types';
+
+export const DEFAULT_TEACHER: Teacher = {
+  id: 'teacher_main',
+  name: 'Cô Phương Anh',
+  avatarUrl: '',
+  schoolName: 'Trường Tiểu học Hùng Vương',
+  grade: 'Khối 2',
+  subject: 'Giáo viên chủ nhiệm',
+  academicYear: '2026-2027',
+  homeroomClass: 'Lớp 2A6',
+};
+
+export function createDefaultClass(): ClassData {
+  const students: Student[] = [
+    { id: 's1', name: 'Dương Ngọc Diễm', gender: 'Nữ', avatarId: 'girl-1', groupId: 'g1', points: 28, totalPositivePoints: 28, totalNegativePoints: 0, status: 'active', badgeIds: ['b1', 'b10'] },
+    { id: 's2', name: 'Hoàng Minh Anh', gender: 'Nữ', avatarId: 'girl-2', groupId: 'g1', points: 25, totalPositivePoints: 25, totalNegativePoints: 0, status: 'active', badgeIds: ['b1', 'b3'] },
+    { id: 's3', name: 'Nguyễn Ngọc Linh', gender: 'Nữ', avatarId: 'girl-3', groupId: 'g2', points: 24, totalPositivePoints: 24, totalNegativePoints: 0, status: 'active', badgeIds: ['b2'] },
+    { id: 's4', name: 'Dương An Bảo Quân', gender: 'Nam', avatarId: 'boy-1', groupId: 'g2', points: 22, totalPositivePoints: 22, totalNegativePoints: 0, status: 'active', badgeIds: ['b4'] },
+    { id: 's5', name: 'Hà Thị Khánh Huyền', gender: 'Nữ', avatarId: 'girl-4', groupId: 'g3', points: 21, totalPositivePoints: 21, totalNegativePoints: 0, status: 'active', badgeIds: ['b5'] },
+    { id: 's6', name: 'Dương Hải Đăng', gender: 'Nam', avatarId: 'boy-2', groupId: 'g3', points: 19, totalPositivePoints: 19, totalNegativePoints: 0, status: 'active', badgeIds: ['b6'] },
+    { id: 's7', name: 'Giáp Hà My', gender: 'Nữ', avatarId: 'girl-5', groupId: 'g4', points: 18, totalPositivePoints: 18, totalNegativePoints: 0, status: 'active', badgeIds: ['b7'] },
+    { id: 's8', name: 'Lê Gia Bảo', gender: 'Nam', avatarId: 'boy-3', groupId: 'g4', points: 17, totalPositivePoints: 17, totalNegativePoints: 0, status: 'active', badgeIds: ['b8'] },
+    { id: 's9', name: 'Hà Đình Ngọc Sơn', gender: 'Nam', avatarId: 'boy-4', groupId: 'g1', points: 16, totalPositivePoints: 16, totalNegativePoints: 0, status: 'active', badgeIds: ['b9'] },
+    { id: 's10', name: 'Đàm Thị Phấn', gender: 'Nữ', avatarId: 'girl-6', groupId: 'g2', points: 15, totalPositivePoints: 15, totalNegativePoints: 0, status: 'active', badgeIds: [] },
+    { id: 's11', name: 'Phạm Đức Huy', gender: 'Nam', avatarId: 'boy-5', groupId: 'g3', points: 14, totalPositivePoints: 14, totalNegativePoints: 0, status: 'active', badgeIds: [] },
+    { id: 's12', name: 'Đào Duy Đạt', gender: 'Nam', avatarId: 'boy-6', groupId: 'g4', points: 13, totalPositivePoints: 13, totalNegativePoints: 0, status: 'active', badgeIds: [] },
+    { id: 's13', name: 'Bùi Bảo Nam', gender: 'Nam', avatarId: 'boy-7', groupId: 'g1', points: 20, totalPositivePoints: 20, totalNegativePoints: 0, status: 'active', badgeIds: ['b1'] },
+    { id: 's14', name: 'Vũ Thảo Vy', gender: 'Nữ', avatarId: 'girl-7', groupId: 'g2', points: 22, totalPositivePoints: 22, totalNegativePoints: 0, status: 'active', badgeIds: ['b3'] },
+    { id: 's15', name: 'Trần Minh Khang', gender: 'Nam', avatarId: 'boy-8', groupId: 'g3', points: 18, totalPositivePoints: 18, totalNegativePoints: 0, status: 'active', badgeIds: ['b4'] },
+    { id: 's16', name: 'Lê Khánh Linh', gender: 'Nữ', avatarId: 'girl-8', groupId: 'g4', points: 19, totalPositivePoints: 19, totalNegativePoints: 0, status: 'active', badgeIds: ['b2'] },
+  ];
+
+  return {
+    id: 'class_2a6',
+    name: 'Lớp 2A6',
+    students,
+    groups: [
+      { id: 'g1', name: 'Tổ 1' },
+      { id: 'g2', name: 'Tổ 2' },
+      { id: 'g3', name: 'Tổ 3' },
+      { id: 'g4', name: 'Tổ 4' },
+    ],
+    transactions: [],
+    rewardTransactions: [],
+    badges: [],
+  };
+}
 
 export const DEFAULT_BADGES: Badge[] = [
   { id: 'b1', icon: '📚', name: 'Chăm học', description: 'Học tập chăm chỉ mỗi ngày' },

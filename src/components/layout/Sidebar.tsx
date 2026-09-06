@@ -48,12 +48,6 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
     soundEnabled, 
     toggleSound, 
     rewards,
-    userRole,
-    setUserRole,
-    setPinAuthModal,
-    workspaces,
-    setWorkspaceModal,
-    setDepartmentModal,
   } = useStore();
   const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showClassModal, setShowClassModal] = useState(false);
@@ -89,18 +83,6 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
 
   const handleOpenAddClass = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (userRole === 'parent') {
-      setPinAuthModal({
-        isOpen: true,
-        title: 'Chỉ Giáo viên chủ nhiệm mới được thêm lớp học mới',
-        onSuccess: () => {
-          setEditingClassId(null);
-          setShowClassModal(true);
-          setShowClassDropdown(false);
-        }
-      });
-      return;
-    }
     setEditingClassId(null);
     setShowClassModal(true);
     setShowClassDropdown(false);
@@ -108,18 +90,6 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
 
   const handleOpenEditClass = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
-    if (userRole === 'parent') {
-      setPinAuthModal({
-        isOpen: true,
-        title: 'Chỉ Giáo viên chủ nhiệm mới được đổi tên và cấu hình lớp',
-        onSuccess: () => {
-          setEditingClassId(id);
-          setShowClassModal(true);
-          setShowClassDropdown(false);
-        }
-      });
-      return;
-    }
     setEditingClassId(id);
     setShowClassModal(true);
     setShowClassDropdown(false);
@@ -394,41 +364,6 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
                     );
                   })}
                 </div>
-
-                {/* Quick Switch to Other Teachers / Workspaces & Department */}
-                <div className="pt-2 border-t border-white/20 space-y-1.5">
-                  <button
-                    onClick={() => {
-                      setShowClassDropdown(false);
-                      setWorkspaceModal(true);
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl bg-white/15 hover:bg-white/25 text-white text-xs font-bold transition-all text-left cursor-pointer active:scale-95 shadow-2xs"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <Users size={13} className="text-amber-300 shrink-0" />
-                      <span className="truncate">Đổi Giáo viên ({workspaces.length} GV độc lập)</span>
-                    </div>
-                    <span className="text-[10px] bg-white/20 text-white px-1.5 py-0.5 rounded-md font-black shrink-0">
-                      Quản lý
-                    </span>
-                  </button>
-                  
-                  <button
-                    onClick={() => {
-                      setShowClassDropdown(false);
-                      setDepartmentModal(true);
-                    }}
-                    className="w-full flex items-center justify-between p-2 rounded-xl bg-indigo-950/40 hover:bg-indigo-950/60 border border-white/15 text-white text-xs font-bold transition-all text-left cursor-pointer active:scale-95 shadow-2xs"
-                  >
-                    <div className="flex items-center gap-1.5 min-w-0">
-                      <School size={13} className="text-pink-300 shrink-0" />
-                      <span className="truncate">Bảng Thi Đua Tổ ({workspaces.length} Lớp)</span>
-                    </div>
-                    <span className="text-[10px] bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded-md font-black shrink-0">
-                      Tổ Khối 2
-                    </span>
-                  </button>
-                </div>
               </div>
             )}
           </div>
@@ -448,21 +383,8 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
                 {section.items.map(item => {
                   const isActive = activeTab === item.id;
                   const Icon = item.icon;
-                  const isTeacherOnly = item.id === 'settings' || item.id === 'import';
-                  const isLockedForParent = userRole === 'parent' && isTeacherOnly;
 
                   const handleItemClick = () => {
-                    if (isLockedForParent) {
-                      setPinAuthModal({
-                        isOpen: true,
-                        title: `Chỉ Giáo viên chủ nhiệm mới có quyền vào ${item.label}`,
-                        onSuccess: () => {
-                          setUserRole('teacher');
-                          setActiveTab(item.id);
-                        }
-                      });
-                      return;
-                    }
                     setActiveTab(item.id);
                   };
 
@@ -502,11 +424,7 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
                             {item.label}
                           </span>
 
-                          {isLockedForParent ? (
-                            <span className="text-[9px] px-1.5 py-0.5 rounded-md font-extrabold bg-purple-100 text-purple-700 ml-1.5 shrink-0">
-                              🔒 GV
-                            </span>
-                          ) : item.badge ? (
+                          {item.badge ? (
                             <span className={cn(
                               "text-[10px] px-2 py-0.5 rounded-full font-black ml-1.5 shrink-0 transition-transform group-hover:scale-105",
                               isActive ? "bg-white/25 text-white" : item.badgeColor

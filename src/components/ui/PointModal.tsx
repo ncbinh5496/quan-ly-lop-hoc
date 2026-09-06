@@ -12,32 +12,16 @@ interface PointModalProps {
 }
 
 export function PointModal({ student, type, onClose }: PointModalProps) {
-  const { classes, activeClassId, pointCriteria, addPoints, soundEnabled, userRole, setPinAuthModal, showToast } = useStore();
+  const { classes, activeClassId, pointCriteria, addPoints, soundEnabled } = useStore();
   const [customReason, setCustomReason] = useState('');
   const [customAmount, setCustomAmount] = useState(type === 'positive' ? 1 : -1);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
   const [editingCriteriaId, setEditingCriteriaId] = useState<string | null>(null);
 
-  const isParent = userRole === 'parent';
   const activeClass = classes.find(c => c.id === activeClassId);
   const criteria = pointCriteria.filter(c => c.type === type);
 
   const handleAssign = (amount: number, reason: string) => {
-    if (isParent) {
-      showToast('Chế độ Phụ huynh chỉ đọc. Vui lòng nhập mã PIN Giáo viên để ghi điểm.', 'error');
-      setPinAuthModal({
-        isOpen: true,
-        title: 'Chỉ Giáo viên chủ nhiệm mới có quyền ghi nhận điểm',
-        onSuccess: () => {
-          addPoints(student.id, amount, reason);
-          if (soundEnabled) playSound(amount > 0 ? 'success' : 'error');
-          if (amount > 0) triggerConfetti();
-          onClose();
-        }
-      });
-      return;
-    }
-
     addPoints(student.id, amount, reason);
     if (soundEnabled) {
       playSound(amount > 0 ? 'success' : 'error');

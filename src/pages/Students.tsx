@@ -9,13 +9,16 @@ import { StudentsHeader } from '../components/students/StudentsHeader';
 import { StudentFilterBar } from '../components/students/StudentFilterBar';
 import { StudentEditModal } from '../components/students/StudentEditModal';
 
-export default function Students() {
+interface StudentsProps {
+  onNavigateTab?: (tab: string) => void;
+}
+
+export default function Students({ onNavigateTab }: StudentsProps) {
   const setPointModal = useStore(state => state.setPointModal);
   const showToast = useStore(state => state.showToast);
   const addStudent = useStore(state => state.addStudent);
   const updateStudent = useStore(state => state.updateStudent);
   const deleteStudent = useStore(state => state.deleteStudent);
-  const userRole = useStore(state => state.userRole);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGroup, setFilterGroup] = useState('all');
@@ -28,7 +31,6 @@ export default function Students() {
   const [isAwardBadgeOpen, setIsAwardBadgeOpen] = useState(false);
   
   const activeClass = useActiveClass();
-  const isParent = userRole === 'parent';
 
   const customAvatarsCount = activeClass?.customAvatars?.length || 0;
 
@@ -119,10 +121,10 @@ export default function Students() {
       <StudentsHeader
         activeClass={activeClass}
         customAvatarsCount={customAvatarsCount}
-        isParent={isParent}
         onOpenAwardBadge={() => setIsAwardBadgeOpen(true)}
         onOpenClassGallery={() => setIsClassGalleryOpen(true)}
         onAddNewStudent={() => setEditingStudent({ name: '', gender: 'Nữ', groupId: undefined, avatarId: 'girl-1' })}
+        onOpenImport={onNavigateTab ? () => onNavigateTab('import') : undefined}
       />
 
       {/* 2. Search & Filter Bar */}
@@ -138,21 +140,19 @@ export default function Students() {
 
       {/* 3. Students Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-        {/* Quick Add Card (Teacher Only) */}
-        {!isParent && (
-          <button 
-            onClick={() => setEditingStudent({ name: '', gender: 'Nữ', groupId: undefined, avatarId: 'girl-1' })}
-            className="group bg-white/70 hover:bg-purple-50/80 border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-[24px] p-6 flex flex-col items-center justify-center gap-3 transition-all duration-300 text-purple-600 min-h-[220px] shadow-2xs hover:shadow-md cursor-pointer"
-          >
-            <div className="w-14 h-14 bg-purple-100 group-hover:bg-purple-600 group-hover:text-white rounded-2xl flex items-center justify-center shadow-xs text-purple-600 transition-colors">
-              <Plus size={28} strokeWidth={2.5} />
-            </div>
-            <div className="text-center">
-              <span className="block font-black text-sm text-slate-800 group-hover:text-purple-700">Thêm học sinh mới</span>
-              <span className="text-[11px] text-slate-400">Tạo hồ sơ & tích điểm</span>
-            </div>
-          </button>
-        )}
+        {/* Quick Add Card */}
+        <button 
+          onClick={() => setEditingStudent({ name: '', gender: 'Nữ', groupId: undefined, avatarId: 'girl-1' })}
+          className="group bg-white/70 hover:bg-purple-50/80 border-2 border-dashed border-purple-200 hover:border-purple-400 rounded-[24px] p-6 flex flex-col items-center justify-center gap-3 transition-all duration-300 text-purple-600 min-h-[220px] shadow-2xs hover:shadow-md cursor-pointer"
+        >
+          <div className="w-14 h-14 bg-purple-100 group-hover:bg-purple-600 group-hover:text-white rounded-2xl flex items-center justify-center shadow-xs text-purple-600 transition-colors">
+            <Plus size={28} strokeWidth={2.5} />
+          </div>
+          <div className="text-center">
+            <span className="block font-black text-sm text-slate-800 group-hover:text-purple-700">Thêm học sinh mới</span>
+            <span className="text-[11px] text-slate-400">Tạo hồ sơ & tích điểm</span>
+          </div>
+        </button>
 
         {filteredStudents.map(student => (
           <StudentCard

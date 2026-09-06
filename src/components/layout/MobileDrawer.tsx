@@ -17,9 +17,6 @@ import {
   Sparkles,
   Volume2,
   VolumeX,
-  Lock,
-  Smartphone,
-  Share2,
   ChevronsUpDown,
   Check
 } from 'lucide-react';
@@ -33,8 +30,6 @@ interface MobileDrawerProps {
   setActiveTab: (tab: string) => void;
   onOpenTeacherModal: () => void;
   onOpenClassModal: () => void;
-  onOpenMobileSync: () => void;
-  onOpenShareParent: () => void;
 }
 
 export function MobileDrawer({
@@ -44,8 +39,6 @@ export function MobileDrawer({
   setActiveTab,
   onOpenTeacherModal,
   onOpenClassModal,
-  onOpenMobileSync,
-  onOpenShareParent
 }: MobileDrawerProps) {
   const { 
     teacher, 
@@ -54,11 +47,6 @@ export function MobileDrawer({
     setActiveClass, 
     soundEnabled, 
     toggleSound, 
-    userRole, 
-    setUserRole,
-    setPinAuthModal,
-    setDepartmentModal,
-    departmentInfo,
     showToast
   } = useStore();
 
@@ -68,19 +56,6 @@ export function MobileDrawer({
   if (!isOpen) return null;
 
   const handleSelectTab = (tabId: string) => {
-    const isTeacherOnly = tabId === 'settings' || tabId === 'import';
-    if (userRole === 'parent' && isTeacherOnly) {
-      setPinAuthModal({
-        isOpen: true,
-        title: 'Chỉ Giáo viên chủ nhiệm mới có quyền vào mục này',
-        onSuccess: () => {
-          setUserRole('teacher');
-          setActiveTab(tabId);
-          onClose();
-        }
-      });
-      return;
-    }
     setActiveTab(tabId);
     onClose();
   };
@@ -178,58 +153,6 @@ export function MobileDrawer({
             )}
           </div>
 
-          {/* Quick Actions Row */}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => {
-                onClose();
-                setDepartmentModal(true);
-              }}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white flex items-center justify-between text-xs font-black transition-colors cursor-pointer col-span-2 shadow-xs"
-            >
-              <div className="flex items-center gap-2">
-                <School size={16} className="text-amber-300 shrink-0" />
-                <span>{departmentInfo?.name || 'Tổ Khối 2'} (10 Lớp)</span>
-              </div>
-              <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold">
-                Bảng Thi Đua Tổ
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                onClose();
-                useStore.getState().setWorkspaceModal(true);
-              }}
-              className="p-2.5 rounded-2xl bg-gradient-to-r from-purple-100 to-indigo-100 hover:from-purple-200 hover:to-indigo-200 border border-purple-200 text-purple-900 flex items-center gap-2 text-xs font-black transition-colors cursor-pointer col-span-2 shadow-2xs"
-            >
-              <Users size={16} className="text-purple-600 shrink-0" />
-              <span>Đổi Giáo Viên ({useStore.getState().workspaces.length} GV độc lập)</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onClose();
-                onOpenShareParent();
-              }}
-              className="p-2.5 rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-100 text-purple-900 flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer"
-            >
-              <Share2 size={15} className="text-purple-600 shrink-0" />
-              <span>Gửi Phụ Huynh</span>
-            </button>
-
-            <button
-              onClick={() => {
-                onClose();
-                onOpenMobileSync();
-              }}
-              className="p-2.5 rounded-2xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 text-emerald-900 flex items-center gap-2 text-xs font-bold transition-colors cursor-pointer"
-            >
-              <Smartphone size={15} className="text-emerald-600 shrink-0" />
-              <span>Đồng bộ ĐT</span>
-            </button>
-          </div>
-
           {/* Full Navigation Links */}
           <div className="space-y-1">
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">
@@ -239,7 +162,6 @@ export function MobileDrawer({
             {navItems.map((item) => {
               const isActive = activeTab === item.id;
               const Icon = item.icon;
-              const isLocked = userRole === 'parent' && item.teacherOnly;
 
               return (
                 <button
@@ -262,11 +184,7 @@ export function MobileDrawer({
                     <span className="truncate">{item.label}</span>
                   </div>
 
-                  {isLocked ? (
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-100 text-purple-700 font-extrabold shrink-0">
-                      🔒 GV
-                    </span>
-                  ) : item.badge ? (
+                  {item.badge ? (
                     <span className={cn(
                       "text-[10px] px-2 py-0.5 rounded-full font-black shrink-0",
                       isActive ? "bg-white/20 text-white" : "bg-purple-100 text-purple-700"
@@ -297,48 +215,23 @@ export function MobileDrawer({
           </button>
 
           {/* Teacher Profile Trigger */}
-          {userRole === 'teacher' ? (
-            <div 
-              onClick={() => {
-                onClose();
-                onOpenTeacherModal();
-              }}
-              className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-purple-200 transition-colors"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
-                {teacher?.avatarUrl ? (
-                  <img src={teacher.avatarUrl} alt="" className="w-full h-full object-cover" />
-                ) : '👩‍🏫'}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-black text-slate-800 truncate">{teacher?.name || 'Cô Phương Anh'}</p>
-                <p className="text-[10px] text-slate-400 font-medium truncate">{teacher?.subject || 'Giáo viên chủ nhiệm'}</p>
-              </div>
+          <div 
+            onClick={() => {
+              onClose();
+              onOpenTeacherModal();
+            }}
+            className="flex items-center gap-2.5 p-2 rounded-xl bg-white border border-slate-200 cursor-pointer hover:border-purple-200 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+              {teacher?.avatarUrl ? (
+                <img src={teacher.avatarUrl} alt="" className="w-full h-full object-cover" />
+              ) : '👩‍🏫'}
             </div>
-          ) : (
-            <button
-              onClick={() => {
-                onClose();
-                setPinAuthModal({
-                  isOpen: true,
-                  title: 'Đăng nhập Giáo viên chủ nhiệm',
-                  onSuccess: () => {
-                    setUserRole('teacher');
-                    showToast('Đã chuyển sang chế độ Giáo viên');
-                  }
-                });
-              }}
-              className="w-full flex items-center justify-between p-2.5 rounded-xl bg-purple-50 border border-purple-200 text-xs font-bold text-purple-700 cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <Lock size={15} />
-                <span>Mở quyền Giáo viên</span>
-              </span>
-              <span className="text-[10px] bg-purple-200 text-purple-900 px-2 py-0.5 rounded-full font-black">
-                Nhập PIN
-              </span>
-            </button>
-          )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-black text-slate-800 truncate">{teacher?.name || 'Cô Phương Anh'}</p>
+              <p className="text-[10px] text-slate-400 font-medium truncate">{teacher?.subject || 'Giáo viên chủ nhiệm'}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
