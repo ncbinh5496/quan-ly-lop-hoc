@@ -1,69 +1,32 @@
-// Service Worker for Class Management PWA
-const CACHE_NAME = 'happy-class-pwa-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.webmanifest',
-  '/icons/icon-192.svg',
-  '/icons/icon-512.svg',
-  '/favicon.svg'
-];
-
-// Install: cache core shell assets
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    }).then(() => self.skipWaiting())
-  );
+// Build replaces these markers with a content hash and the complete offline shell.
+const BUILD_ID = '__BUILD_ID__';
+const PRECACHE = /*__PRECACHE__*/[];
+const PREFIX = `happy-class-pwa-${encodeURIComponent(self.registration.scope)}-`;
+const CACHE_NAME = PREFIX + BUILD_ID;
+const localUrl = path => new URL(path, self.registration.scope).href;
+self.addEventListener('install', event => {
+  // Do not skipWaiting: keep each open page paired with its own build's assets.
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(PRECACHE.map(localUrl))));
 });
-
-// Activate: clean up old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
-      );
-    }).then(() => self.clients.claim())
-  );
+self.addEventListener('activate', event => {
+  event.waitUntil((async () => {
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith(PREFIX)&&key!==CACHE_NAME).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
-
-// Fetch: network first with cache fallback for HTML, cache first with network fallback for assets
-self.addEventListener('fetch', (event) => {
-  const request = event.request;
-  
-  // Ignore non-GET requests and browser extensions / external API endpoints
-  if (request.method !== 'GET' || !request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  // For navigation / HTML requests: Network first, fallback to cached index.html
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request).catch(() => {
-        return caches.match('/index.html') || caches.match('/');
-      })
-    );
-    return;
-  }
-
-  // For static assets (images, fonts, scripts): Stale-while-revalidate
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      const fetchPromise = fetch(request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        return cachedResponse;
-      });
-
-      return cachedResponse || fetchPromise;
-    })
-  );
+self.addEventListener('fetch', event => {
+  const request=event.request;
+  if (request.method!=='GET' || !request.url.startsWith(self.registration.scope)) return;
+  event.respondWith((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    if (request.mode==='navigate') {
+      const shell=await cache.match(localUrl('index.html'));
+      if (shell) return shell;
+      try { return await fetch(request); } catch { return new Response('Ứng dụng chưa sẵn sàng offline. Vui lòng kết nối mạng một lần.',{status:503}); }
+    }
+    const cached=await cache.match(request);
+    if (cached) return cached;
+    try { return await fetch(request); } catch { return new Response('',{status:503}); }
+  })());
 });

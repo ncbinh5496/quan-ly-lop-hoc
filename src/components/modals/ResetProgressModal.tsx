@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useState, useEffect } from 'react';
 import { useStore } from '../../store';
 import { 
@@ -23,7 +24,7 @@ export function ResetProgressModal({ isOpen, onClose, defaultTab = 'all' }: Rese
     resetRewards,
     soundEnabled, 
     showToast 
-  } = useStore();
+  } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, resetClassPoints: state.resetClassPoints, resetClassBadges: state.resetClassBadges, resetClassRewards: state.resetClassRewards, resetClassAllProgress: state.resetClassAllProgress, resetRewards: state.resetRewards, soundEnabled: state.soundEnabled, showToast: state.showToast })));
 
   const [selectedAction, setSelectedAction] = useState<'all' | 'points' | 'badges' | 'rewards' | 'catalog'>(defaultTab);
   const [confirmText, setConfirmText] = useState('');
@@ -327,3 +328,4 @@ export function ResetProgressModal({ isOpen, onClose, defaultTab = 'all' }: Rese
     </div>
   );
 }
+

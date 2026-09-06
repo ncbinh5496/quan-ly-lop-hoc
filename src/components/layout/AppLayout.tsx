@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { lazy, Suspense, useState, useMemo } from 'react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { BottomNavigation } from './BottomNavigation';
@@ -11,17 +11,17 @@ import { useStore } from '../../store';
 import { PRESET_GRADIENTS } from '../../utils/backgroundThemes';
 
 // Pages
-import Dashboard from '../../pages/Dashboard';
-import Students from '../../pages/Students';
-import Groups from '../../pages/Groups';
-import Leaderboard from '../../pages/Leaderboard';
-import History from '../../pages/History';
-import Rewards from '../../pages/Rewards';
-import Reports from '../../pages/Reports';
-import Badges from '../../pages/Badges';
-import Tools from '../../pages/Tools';
-import Settings from '../../pages/Settings';
-import ImportData from '../../pages/ImportData';
+const Dashboard = lazy(() => import('../../pages/Dashboard'));
+const Students = lazy(() => import('../../pages/Students'));
+const Groups = lazy(() => import('../../pages/Groups'));
+const Leaderboard = lazy(() => import('../../pages/Leaderboard'));
+const History = lazy(() => import('../../pages/History'));
+const Rewards = lazy(() => import('../../pages/Rewards'));
+const Reports = lazy(() => import('../../pages/Reports'));
+const Badges = lazy(() => import('../../pages/Badges'));
+const Tools = lazy(() => import('../../pages/Tools'));
+const Settings = lazy(() => import('../../pages/Settings'));
+const ImportData = lazy(() => import('../../pages/ImportData'));
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -80,7 +80,7 @@ export function AppLayout() {
 
   return (
     <div 
-      className="flex h-screen w-full overflow-hidden font-sans relative bg-[#F8F7FB]" 
+      className="app-shell flex h-screen w-full overflow-hidden font-sans relative bg-[#F8F7FB]"
       style={!isImageBg ? backgroundStyle : undefined}
     >
       {/* Background Image Layer if selected */}
@@ -104,7 +104,7 @@ export function AppLayout() {
       )}
 
       {/* Desktop Sidebar (hidden on mobile) */}
-      <div className="hidden md:flex">
+      <div className="no-print hidden md:flex">
         <Sidebar 
           collapsed={collapsed} 
           setCollapsed={setCollapsed} 
@@ -122,12 +122,12 @@ export function AppLayout() {
         
         <main className="flex-1 overflow-y-auto p-3.5 sm:p-6 lg:p-8 pb-24 md:pb-8">
           <div className="max-w-7xl mx-auto space-y-6">
-            {renderContent()}
+            <Suspense fallback={<div role="status" className="p-8 text-center text-purple-700">Đang mở nội dung…</div>}>{renderContent()}</Suspense>
           </div>
         </main>
 
         {/* Desktop Footer (hidden on mobile to save space for BottomNavigation) */}
-        <footer className="hidden md:flex h-10 bg-white/70 backdrop-blur-md border-t border-purple-100/60 items-center justify-between px-4 sm:px-6 text-slate-500 text-[11px] font-bold shrink-0">
+        <footer className="no-print hidden md:flex h-10 bg-white/70 backdrop-blur-md border-t border-purple-100/60 items-center justify-between px-4 sm:px-6 text-slate-500 text-[11px] font-bold shrink-0">
           <div className="flex items-center gap-3">
             <span className="text-purple-600 font-extrabold flex items-center gap-1.5">
               <span>📘 Lớp Học Hạnh Phúc</span>
@@ -138,7 +138,7 @@ export function AppLayout() {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500" />
             <span className="text-emerald-700 font-semibold flex items-center gap-1">
-              💾 Dữ liệu lưu trữ nội bộ trên máy tính (Chạy Offline 100%)
+              💾 Dữ liệu lưu trữ nội bộ trên máy tính (Lưu trên thiết bị này)
             </span>
           </div>
         </footer>
@@ -182,3 +182,4 @@ export function AppLayout() {
     </div>
   );
 }
+

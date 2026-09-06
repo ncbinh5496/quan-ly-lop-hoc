@@ -54,12 +54,12 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
     };
   }, [showNotifications]);
 
-  const recentTransactions = activeClass?.transactions?.slice(-4).reverse() || [];
+  const recentTransactions = activeClass?.transactions?.slice(0,4) || [];
 
   return (
     <>
       <header 
-        className="min-h-[72px] sm:min-h-[82px] md:min-h-[86px] bg-white/95 backdrop-blur-xl border-b border-purple-100/90 flex flex-wrap items-center justify-between sticky top-0 z-20 shrink-0 select-none shadow-[0_6px_28px_rgba(124,58,237,0.07)] safe-top transition-all"
+        className="no-print min-h-[72px] sm:min-h-[82px] md:min-h-[86px] bg-white/95 backdrop-blur-xl border-b border-purple-100/90 flex flex-wrap items-center justify-between sticky top-0 z-20 shrink-0 select-none shadow-[0_6px_28px_rgba(124,58,237,0.07)] safe-top transition-all"
         style={{
           paddingLeft: 'clamp(0.75rem, 3vw, 2rem)',
           paddingRight: 'clamp(0.75rem, 3vw, 2rem)',
@@ -272,3 +272,4 @@ export function Topbar({ activeTab = 'dashboard', onOpenMobileDrawer }: TopbarPr
     </>
   );
 }
+

@@ -1,22 +1,17 @@
+import type { ClassData } from '../types';
 import { useState, useMemo } from 'react';
 import { useStore, useActiveClass } from '../store';
 import { History as HistoryIcon, Clock, ArrowRight, RotateCcw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { cn, getAvatarUrl, formatDate } from '../utils/helpers';
 
-export default function History() {
+function HistoryContent({ activeClass }: { activeClass: ClassData }) {
   const undoLastTransaction = useStore(state => state.undoLastTransaction);
+  const [limit, setLimit] = useState(100);
   const [filterType, setFilterType] = useState('all');
   
-  const activeClass = useActiveClass();
 
-  if (!activeClass) {
-    return (
-      <div className="bg-white/90 rounded-3xl p-12 text-center text-slate-500 border border-purple-100 max-w-lg mx-auto mt-12">
-        <h3 className="text-xl font-black text-slate-800 mb-2">Chưa chọn lớp học</h3>
-        <p className="text-sm text-slate-500">Vui lòng tạo hoặc chọn một lớp học để xem lịch sử điểm.</p>
-      </div>
-    );
-  }
+
+
 
   // Pre-index students for O(1) row lookups
   const studentsMap = useMemo(() => {
@@ -38,7 +33,7 @@ export default function History() {
 
   const transactions = useMemo(() => {
     const rawTxs = activeClass.transactions || [];
-    let list = [...rawTxs].reverse();
+    let list = [...rawTxs];
     
     if (filterType === 'positive') {
       list = list.filter(t => t.amount > 0);
@@ -67,7 +62,7 @@ export default function History() {
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <select 
             value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
+            onChange={(e) => { setFilterType(e.target.value); setLimit(100); }}
             className="px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-400 text-slate-700 text-xs font-bold cursor-pointer"
           >
             <option value="all">Tất cả giao dịch ({activeClass.transactions.length})</option>
@@ -86,6 +81,7 @@ export default function History() {
         </div>
       </div>
 
+      {transactions.length > limit && <button className="text-purple-700 underline no-print" onClick={() => setLimit(n => n + 100)}>Xem thêm 100 giao dịch ({Math.min(limit, transactions.length)}/{transactions.length})</button>}
       {/* Main Transactions List */}
       <div className="bg-white/95 rounded-[28px] p-6 shadow-[0_8px_30px_rgba(124,58,237,0.05)] border border-purple-100/80 max-h-[70vh] overflow-y-auto">
         {transactions.length === 0 ? (
@@ -96,7 +92,7 @@ export default function History() {
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
-            {transactions.map(tx => {
+            {transactions.slice(0, limit).map(tx => {
               const student = studentsMap.get(tx.studentId);
               if (!student) return null;
               
@@ -142,4 +138,10 @@ export default function History() {
       </div>
     </div>
   );
+}
+
+
+export default function History() {
+  const activeClass = useActiveClass();
+  return activeClass ? <HistoryContent activeClass={activeClass} /> : null;
 }

@@ -1,3 +1,4 @@
+import { classroomDate, periodStart } from '../../utils/dates';
 import React, { useMemo, memo } from 'react';
 import { Sparkles, UserCheck, Star } from 'lucide-react';
 import { Teacher, ClassData } from '../../types';
@@ -62,7 +63,7 @@ export const DashboardHero = memo(function DashboardHero({
 
           {/* Subtitle */}
           <p className="text-purple-100 text-sm sm:text-base font-medium leading-relaxed max-w-xl drop-shadow-xs">
-            Tuần 1 · 17/08–21/08 · Lớp {activeClass.name}. Hãy cùng tạo thêm những khoảnh khắc học tập đáng nhớ và tràn ngập niềm vui hôm nay nhé!
+            Tuần từ {classroomDate(periodStart('week')).split('-').reverse().join('/')} · Lớp {activeClass.name}. Hãy cùng tạo thêm những khoảnh khắc học tập đáng nhớ và tràn ngập niềm vui hôm nay nhé!
           </p>
 
           {/* Action Buttons: Yellow (Attendance) & Pink (Add Points) */}
@@ -97,7 +98,7 @@ export const DashboardHero = memo(function DashboardHero({
                 Tích lũy tuần này
               </p>
               <p className="text-xl font-black text-white drop-shadow-xs">
-                +{weeklyPoints > 0 ? weeklyPoints : 600} điểm
+                +{weeklyPoints} điểm
               </p>
             </div>
           </div>
@@ -112,7 +113,7 @@ export const DashboardHero = memo(function DashboardHero({
                 Huy hiệu vinh danh
               </p>
               <p className="text-xl font-black text-white drop-shadow-xs">
-                {totalBadgesAwarded > 0 ? totalBadgesAwarded : 12} huy hiệu mới
+                {totalBadgesAwarded} huy hiệu mới
               </p>
             </div>
           </div>
@@ -121,3 +122,4 @@ export const DashboardHero = memo(function DashboardHero({
     </div>
   );
 });
+

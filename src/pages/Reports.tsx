@@ -1,3 +1,4 @@
+import type { ClassData } from '../types';
 import React, { useMemo } from 'react';
 import { useStore, useActiveClass } from '../store';
 import { BarChart2, Download, Printer, Star, TrendingUp, HeartHandshake } from 'lucide-react';
@@ -5,18 +6,11 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { exportToExcel } from '../utils/excelExporter';
 import { getRankedStudents } from '../utils/scoreCalculator';
 
-export default function Reports() {
+function ReportsContent({ activeClass }: { activeClass: ClassData }) {
   const showToast = useStore(state => state.showToast);
-  const activeClass = useActiveClass();
 
-  if (!activeClass) {
-    return (
-      <div className="bg-white/90 rounded-3xl p-12 text-center text-slate-500 border border-purple-100 max-w-lg mx-auto mt-12">
-        <h3 className="text-xl font-black text-slate-800 mb-2">Chưa chọn lớp học</h3>
-        <p className="text-sm text-slate-500">Vui lòng tạo hoặc chọn một lớp học để xem báo cáo.</p>
-      </div>
-    );
-  }
+
+
 
   const sortedByPoints = useMemo(() => {
     return getRankedStudents(activeClass.students);
@@ -105,7 +99,7 @@ export default function Reports() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="no-print flex gap-2">
           <button 
             onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs shadow-md shadow-emerald-600/20 transition-all cursor-pointer hover:scale-105 active:scale-95"
@@ -196,4 +190,10 @@ export default function Reports() {
       </div>
     </div>
   );
+}
+
+
+export default function Reports() {
+  const activeClass = useActiveClass();
+  return activeClass ? <ReportsContent activeClass={activeClass} /> : null;
 }

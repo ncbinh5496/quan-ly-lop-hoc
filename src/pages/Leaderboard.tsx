@@ -1,28 +1,24 @@
+import type { ClassData } from '../types';
 import { useState, useMemo } from 'react';
 import { useStore, useActiveClass } from '../store';
 import { Trophy, Medal, Search, Filter, Calendar, Award, Sparkles, TrendingUp, Star, Crown } from 'lucide-react';
 import { cn, getAvatarUrl, getLevelForPoints } from '../utils/helpers';
+import { useClassroomDate } from '../utils/useClassroomDate';
 import { filterTransactionsByTime } from '../utils/scoreCalculator';
 
 type TimeFilterType = 'today' | 'week' | 'month' | 'all';
 
-export default function Leaderboard() {
+function LeaderboardContent({ activeClass }: { activeClass: ClassData }) {
   const levels = useStore(state => state.levels);
   const badges = useStore(state => state.badges);
   const [timeFilter, setTimeFilter] = useState<TimeFilterType>('all');
+  const today = useClassroomDate();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
   
-  const activeClass = useActiveClass();
 
-  if (!activeClass) {
-    return (
-      <div className="bg-white/90 rounded-3xl p-12 text-center text-slate-500 border border-purple-100 max-w-lg mx-auto mt-12">
-        <h3 className="text-xl font-black text-slate-800 mb-2">Chưa chọn lớp học</h3>
-        <p className="text-sm text-slate-500">Vui lòng tạo hoặc chọn một lớp học để xem bảng thi đua.</p>
-      </div>
-    );
-  }
+
+
 
   // Filter transactions by time with O(T + S) pre-aggregation
   const timeFilteredData = useMemo(() => {
@@ -36,7 +32,7 @@ export default function Leaderboard() {
     }
 
     const filteredTransactions = filterTransactionsByTime(activeClass.transactions || [], timeFilter);
-    const hasTransactions = filteredTransactions.length > 0;
+
 
     // Single pass aggregation for O(1) per-student lookups
     const txStatsMap = new Map<string, { positive: number; negative: number }>();
@@ -55,15 +51,6 @@ export default function Leaderboard() {
     }
 
     return activeClass.students.map(student => {
-      if (!hasTransactions && student.points > 0) {
-        return {
-          ...student,
-          displayPoints: student.points,
-          displayPositive: student.totalPositivePoints || 0,
-          displayNegative: student.totalNegativePoints || 0,
-        };
-      }
-
       const stat = txStatsMap.get(student.id) || { positive: 0, negative: 0 };
       const net = stat.positive - stat.negative;
 
@@ -74,7 +61,7 @@ export default function Leaderboard() {
         displayNegative: stat.negative,
       };
     });
-  }, [activeClass.students, activeClass.transactions, timeFilter]);
+  }, [activeClass.students, activeClass.transactions, timeFilter, today]);
 
   // Pre-index groups for O(1) group name lookups
   const groupsMap = useMemo(() => {
@@ -96,7 +83,7 @@ export default function Leaderboard() {
       list = list.filter(s => s.groupId === selectedGroup);
     }
 
-    return list.sort((a, b) => 
+    return [...list].sort((a, b) =>
       b.displayPoints - a.displayPoints || 
       b.displayPositive - a.displayPositive || 
       b.points - a.points
@@ -381,4 +368,10 @@ export default function Leaderboard() {
       </div>
     </div>
   );
+}
+
+
+export default function Leaderboard() {
+  const activeClass = useActiveClass();
+  return activeClass ? <LeaderboardContent activeClass={activeClass} /> : null;
 }

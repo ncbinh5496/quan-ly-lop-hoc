@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Save, School, CheckSquare, Square } from 'lucide-react';
 import { useStore } from '../../store';
@@ -9,11 +10,11 @@ interface ClassModalProps {
 }
 
 export function ClassModal({ isOpen, onClose, editingClassId }: ClassModalProps) {
-  const { classes, createClass, updateClass, showToast } = useStore();
+  const { classes, createClass, updateClass, showToast } = useStore(useShallow(state => ({ classes: state.classes, createClass: state.createClass, updateClass: state.updateClass, showToast: state.showToast })));
   const [className, setClassName] = useState('');
   const [createDefaultGroups, setCreateDefaultGroups] = useState(true);
 
-  const existingClass = editingClassId ? classes.find(c => c.id === editingClassId) : null;
+  const existingClass = classes[0];
 
   useEffect(() => {
     if (existingClass) {
@@ -122,3 +123,4 @@ export function ClassModal({ isOpen, onClose, editingClassId }: ClassModalProps)
     </div>
   );
 }
+

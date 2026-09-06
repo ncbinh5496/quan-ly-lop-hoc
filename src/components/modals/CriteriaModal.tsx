@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Save, Sparkles, Check, AlertCircle } from 'lucide-react';
 import { useStore } from '../../store';
@@ -26,7 +27,7 @@ export function CriteriaModal({
   editingCriteriaId,
   defaultType = 'positive',
 }: CriteriaModalProps) {
-  const { pointCriteria, addPointCriteria, updatePointCriteria, showToast } = useStore();
+  const { pointCriteria, addPointCriteria, updatePointCriteria, showToast } = useStore(useShallow(state => ({ pointCriteria: state.pointCriteria, addPointCriteria: state.addPointCriteria, updatePointCriteria: state.updatePointCriteria, showToast: state.showToast })));
 
   const [type, setType] = useState<'positive' | 'negative'>(defaultType);
   const [reason, setReason] = useState('');
@@ -264,3 +265,4 @@ export function CriteriaModal({
     </div>
   );
 }
+

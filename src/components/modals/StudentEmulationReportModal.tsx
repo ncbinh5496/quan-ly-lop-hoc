@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useMemo, useRef } from 'react';
 import { 
   X, 
@@ -29,7 +30,7 @@ interface StudentEmulationReportModalProps {
 }
 
 export function StudentEmulationReportModal({ studentId, onClose }: StudentEmulationReportModalProps) {
-  const { classes, activeClassId, levels, badges: allBadges, rewards, teacher } = useStore();
+  const { classes, activeClassId, levels, badges: allBadges, rewards, teacher } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, levels: state.levels, badges: state.badges, rewards: state.rewards, teacher: state.teacher })));
   const [filterType, setFilterType] = useState<'all' | 'positive' | 'negative'>('all');
   const printRef = useRef<HTMLDivElement>(null);
 
@@ -88,8 +89,8 @@ export function StudentEmulationReportModal({ studentId, onClose }: StudentEmula
         const reward = rewards.find(r => r.id === t.rewardId);
         return {
           ...t,
-          rewardName: reward?.name || 'Phần quà thưởng',
-          rewardIcon: reward?.icon || '🎁',
+          rewardName: t.rewardName || reward?.name || 'Phần quà thưởng',
+          rewardIcon: t.rewardIcon || reward?.icon || '🎁',
         };
       })
       .sort((a, b) => b.timestamp - a.timestamp);
@@ -101,10 +102,12 @@ export function StudentEmulationReportModal({ studentId, onClose }: StudentEmula
     let present = 0;
     let late = 0;
     let absent = 0;
-    const total = activeClass.attendanceRecords.length;
+    let total = 0;
 
     activeClass.attendanceRecords.forEach(rec => {
-      const status = rec.studentStatuses?.[student.id] || 'present';
+      const status = rec.studentStatuses?.[student.id];
+      if (!status) return;
+      total++;
       if (status === 'present') present++;
       else if (status === 'late') late++;
       else absent++;
@@ -128,7 +131,7 @@ export function StudentEmulationReportModal({ studentId, onClose }: StudentEmula
   const isTopRank = classRank && classRank <= 3;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md overflow-y-auto animate-fade-in">
+    <div className="student-report-overlay fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-md overflow-y-auto animate-fade-in">
       <div 
         ref={printRef}
         className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-purple-100 overflow-hidden my-auto flex flex-col max-h-[92vh]"
@@ -180,7 +183,7 @@ export function StudentEmulationReportModal({ studentId, onClose }: StudentEmula
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="no-print flex items-center gap-2 shrink-0">
               <button
                 onClick={handlePrint}
                 className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"

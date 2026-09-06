@@ -1,3 +1,4 @@
+import { periodStart } from './dates';
 import { Student, ClassData, PointTransaction } from '../types';
 
 /**
@@ -11,22 +12,8 @@ export function filterTransactionsByTime(
   if (period === 'all') return transactions;
 
   const now = new Date();
-  let startTimestamp = 0;
-
-  if (period === 'today') {
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    startTimestamp = today.getTime();
-  } else if (period === 'week') {
-    const day = now.getDay();
-    const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday start
-    const monday = new Date(now.getFullYear(), now.getMonth(), diff, 0, 0, 0);
-    startTimestamp = monday.getTime();
-  } else if (period === 'month') {
-    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-    startTimestamp = firstDay.getTime();
-  }
-
-  return transactions.filter(t => t.timestamp >= startTimestamp);
+  const startTimestamp = periodStart(period, now);
+  return transactions.filter(t => t.timestamp >= startTimestamp && t.timestamp <= now.getTime());
 }
 
 /**
@@ -61,9 +48,7 @@ export function getRankedStudents(
   }
 
   const periodScores: Record<string, number> = {};
-  students.forEach(s => {
-    periodScores[s.id] = calculateStudentPeriodScore(s.id, transactions, period);
-  });
+  for (const tx of filterTransactionsByTime(transactions, period)) periodScores[tx.studentId] = (periodScores[tx.studentId] || 0) + tx.amount;
 
   return [...students]
     .map(s => ({
@@ -137,3 +122,4 @@ export function calculateGroupStats(
     };
   }).sort((a, b) => b.totalPoints - a.totalPoints);
 }
+

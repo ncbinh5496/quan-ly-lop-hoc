@@ -2,30 +2,34 @@
   "name": "Lớp Học Hạnh Phúc - Hành Trình Vinh Quang",
   "short_name": "Lớp Học",
   "description": "Ứng dụng thi đua, tích điểm và quản lý lớp học sinh động dành cho giáo viên và học sinh.",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#F8F7FB",
   "theme_color": "#7C3AED",
   "orientation": "any",
   "icons": [
     {
-      "src": "/icons/icon-192.svg",
+      "src": "./icons/icon-192.svg",
       "sizes": "192x192",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.svg",
+      "src": "./icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-maskable.svg",
+      "src": "./icons/icon-maskable.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "maskable"
     }
   ],
-  "categories": ["education", "productivity"]
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "scope": "./"
 }

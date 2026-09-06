@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useEffect } from 'react';
 import { X, Save, Trash2, Check, Sparkles, Gift, Eye, HelpCircle, FolderHeart, Plus, ImageIcon } from 'lucide-react';
 import { useStore } from '../../store';
@@ -57,7 +58,7 @@ export function RewardModal({
   onClose,
   editingRewardId,
 }: RewardModalProps) {
-  const { rewards, customRewardIcons = [], addReward, updateReward, deleteReward, showToast } = useStore();
+  const { rewards, customRewardIcons = [], addReward, updateReward, deleteReward, showToast } = useStore(useShallow(state => ({ rewards: state.rewards, customRewardIcons: state.customRewardIcons, addReward: state.addReward, updateReward: state.updateReward, deleteReward: state.deleteReward, showToast: state.showToast })));
 
   const [name, setName] = useState('');
   const [cost, setCost] = useState<number>(50);
@@ -494,4 +495,5 @@ export function RewardModal({
     </>
   );
 }
+
 

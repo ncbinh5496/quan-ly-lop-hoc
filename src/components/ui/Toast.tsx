@@ -1,9 +1,10 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useEffect } from 'react';
 import { CheckCircle2, XCircle, Info, X } from 'lucide-react';
 import { useStore } from '../../store';
 
 export function Toast() {
-  const { toast, hideToast } = useStore();
+  const { toast, hideToast } = useStore(useShallow(state => ({ toast: state.toast, hideToast: state.hideToast })));
 
   useEffect(() => {
     if (toast) {
@@ -44,3 +45,4 @@ export function Toast() {
     </div>
   );
 }
+

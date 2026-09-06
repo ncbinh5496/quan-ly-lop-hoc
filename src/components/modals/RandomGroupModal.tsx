@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useShallow } from 'zustand/react/shallow';
+import { useState, useEffect, useRef } from 'react';
 import { useStore, useActiveClass } from '../../store';
 import { 
   X, Shuffle, Users, Check, Sparkles, Trophy, Download, Printer, 
@@ -16,8 +17,15 @@ interface RandomGroupModalProps {
 }
 
 export default function RandomGroupModal({ isOpen, onClose }: RandomGroupModalProps) {
-  const { classes, activeClassId, batchApplyGroups, soundEnabled, showToast } = useStore();
+  const { classes, activeClassId, batchApplyGroups, soundEnabled, showToast } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, batchApplyGroups: state.batchApplyGroups, soundEnabled: state.soundEnabled, showToast: state.showToast })));
   const activeClass = classes.find(c => c.id === activeClassId);
+
+  const shuffleInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  const shuffleTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => {
+    if (shuffleInterval.current) clearInterval(shuffleInterval.current);
+    if (shuffleTimeout.current) clearTimeout(shuffleTimeout.current);
+  }, [isOpen]);
 
   // Configuration States
   const [divisionMode, setDivisionMode] = useState<'byGroupCount' | 'byMemberCount'>('byGroupCount');
@@ -90,6 +98,7 @@ export default function RandomGroupModal({ isOpen, onClose }: RandomGroupModalPr
 
   // Main Algorithm: Smart Random Division
   const executeRandomDivision = () => {
+    if (isShuffling) return;
     if (activeStudents.length === 0) {
       showToast('Vui lòng chọn ít nhất 1 học sinh tham gia chia tổ', 'error');
       return;
@@ -100,12 +109,12 @@ export default function RandomGroupModal({ isOpen, onClose }: RandomGroupModalPr
 
     // Shuffle animation cycle
     let tickCount = 0;
-    const interval = setInterval(() => {
+    const interval = shuffleInterval.current = setInterval(() => {
       tickCount++;
       setShuffleTick(tickCount);
     }, 100);
 
-    setTimeout(() => {
+    shuffleTimeout.current = setTimeout(() => {
       clearInterval(interval);
 
       const numGroups = calculateNumGroups();
@@ -172,6 +181,7 @@ export default function RandomGroupModal({ isOpen, onClose }: RandomGroupModalPr
     const formattedGroups: Group[] = generatedGroups.map(g => ({
       id: g.id,
       name: g.name,
+      leaderId: g.leaderId, icon: g.icon, color: g.color,
     }));
 
     const studentGroupMap: Record<string, string> = {};
@@ -767,3 +777,4 @@ export default function RandomGroupModal({ isOpen, onClose }: RandomGroupModalPr
     </div>
   );
 }
+

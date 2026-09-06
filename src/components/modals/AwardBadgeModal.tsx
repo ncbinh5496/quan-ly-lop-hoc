@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useState } from 'react';
 import { useStore } from '../../store';
 import { 
@@ -24,7 +25,7 @@ interface AwardBadgeModalProps {
 }
 
 export function AwardBadgeModal({ isOpen, onClose, targetStudent }: AwardBadgeModalProps) {
-  const { classes, activeClassId, badges, awardBadge, soundEnabled, teacher, showToast } = useStore();
+  const { classes, activeClassId, badges, awardBadge, soundEnabled, teacher, showToast } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, badges: state.badges, awardBadge: state.awardBadge, soundEnabled: state.soundEnabled, teacher: state.teacher, showToast: state.showToast })));
   
   const activeClass = classes.find(c => c.id === activeClassId);
 
@@ -347,3 +348,4 @@ export function AwardBadgeModal({ isOpen, onClose, targetStudent }: AwardBadgeMo
     </>
   );
 }
+

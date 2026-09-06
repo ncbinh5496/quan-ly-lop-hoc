@@ -1,3 +1,6 @@
+import { useShallow } from 'zustand/react/shallow';
+const EMPTY_STUDENTS: Student[] = [];
+const EMPTY_CRITERIA: PointCriteria[] = [];
 import { useStore } from './index';
 import { ClassData, Student, PointCriteria, Teacher } from '../types';
 
@@ -16,7 +19,7 @@ export function useActiveClass(): ClassData | undefined {
 export function useActiveStudents(): Student[] {
   return useStore(state => {
     const active = state.classes.find(c => c.id === state.activeClassId) || state.classes[0];
-    return active?.students || [];
+    return active?.students || EMPTY_STUDENTS;
   });
 }
 
@@ -31,7 +34,7 @@ export function useTeacher(): Teacher | undefined {
  * Hook to retrieve active point criteria list
  */
 export function usePointCriteria(): PointCriteria[] {
-  return useStore(state => state.pointCriteria || []);
+  return useStore(state => state.pointCriteria || EMPTY_CRITERIA);
 }
 
 /**
@@ -49,10 +52,11 @@ export function useToastNotification() {
  * Hook for App branding & title
  */
 export function useAppBranding() {
-  return useStore(state => ({
+  return useStore(useShallow(state => ({
     appTitle: state.appTitle,
     appSlogan: state.appSlogan,
     headerCoverUrl: state.headerCoverUrl,
     backgroundConfig: state.backgroundConfig,
-  }));
+  })));
 }
+

@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React from 'react';
 import { 
   X, 
@@ -48,7 +49,7 @@ export function MobileDrawer({
     soundEnabled, 
     toggleSound, 
     showToast
-  } = useStore();
+  } = useStore(useShallow(state => ({ teacher: state.teacher, classes: state.classes, activeClassId: state.activeClassId, setActiveClass: state.setActiveClass, soundEnabled: state.soundEnabled, toggleSound: state.toggleSound, showToast: state.showToast })));
 
   const activeClass = useActiveClass();
   const [showClassList, setShowClassList] = React.useState(false);
@@ -118,10 +119,10 @@ export function MobileDrawer({
               </div>
 
               <button
-                onClick={() => setShowClassList(!showClassList)}
+                onClick={() => { onClose(); onOpenClassModal(); }}
                 className="px-2.5 py-1 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-black flex items-center gap-1 transition-all border border-white/20 cursor-pointer shrink-0"
               >
-                <span>Đổi</span>
+                <span>Đổi tên</span>
                 <ChevronsUpDown size={13} />
               </button>
             </div>
@@ -237,3 +238,4 @@ export function MobileDrawer({
     </div>
   );
 }
+

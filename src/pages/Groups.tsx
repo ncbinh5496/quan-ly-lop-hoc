@@ -142,7 +142,8 @@ export default function Groups() {
               {unassignedStudents.map(student => (
                 <div key={student.id} className="relative">
                   <StudentCard 
-                    student={student} 
+                    student={student}
+                    customAvatars={activeClass.customAvatars}
                     onAddPoint={() => setPointModal({ studentId: student.id, type: 'positive' })}
                     onMinusPoint={() => setPointModal({ studentId: student.id, type: 'negative' })}
                   />
@@ -284,3 +285,4 @@ export default function Groups() {
     </div>
   );
 }
+

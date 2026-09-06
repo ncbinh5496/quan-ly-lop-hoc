@@ -1,5 +1,7 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useState, useEffect } from 'react';
 import { X, CheckCircle2, AlertCircle, Clock, Check, Sparkles, UserCheck, Award } from 'lucide-react';
+import { useClassroomDate } from '../../utils/useClassroomDate';
 import { Student } from '../../types';
 import { useStore } from '../../store';
 import { cn, getAvatarUrl, playSound, triggerConfetti } from '../../utils/helpers';
@@ -12,20 +14,23 @@ interface AttendanceModalProps {
 type AttendanceStatus = 'present' | 'late' | 'excused' | 'unexcused';
 
 export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
-  const { classes, activeClassId, addPoints, saveAttendance, showToast, soundEnabled } = useStore();
+  const { classes, activeClassId, addPoints, saveAttendance, showToast, soundEnabled } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, addPoints: state.addPoints, saveAttendance: state.saveAttendance, showToast: state.showToast, soundEnabled: state.soundEnabled })));
   const activeClass = classes.find(c => c.id === activeClassId);
 
   const [attendanceMap, setAttendanceMap] = useState<Record<string, AttendanceStatus>>({});
   const [rewardPoints, setRewardPoints] = useState(true);
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = useClassroomDate();
+  const todayRecord = activeClass?.attendanceRecords?.find(r => r.date === todayStr);
+  const legacyRecord = !!todayRecord && todayRecord.rewardAmounts === undefined;
 
   // Sync with today's record on open
   useEffect(() => {
     if (isOpen && activeClass) {
       const todayRecord = activeClass.attendanceRecords?.find(r => r.date === todayStr);
+      setRewardPoints(todayRecord ? (todayRecord.rewardEnabled ?? false) : true);
       if (todayRecord?.studentStatuses) {
-        setAttendanceMap(todayRecord.studentStatuses);
+        setAttendanceMap(Object.fromEntries(activeClass.students.map(s => [s.id, todayRecord.studentStatuses[s.id] || 'present'])));
       } else {
         const initialMap: Record<string, AttendanceStatus> = {};
         activeClass.students.forEach(s => {
@@ -34,7 +39,7 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
         setAttendanceMap(initialMap);
       }
     }
-  }, [isOpen, activeClassId]);
+  }, [isOpen, activeClassId, todayStr]);
 
   if (!isOpen || !activeClass) return null;
 
@@ -64,23 +69,15 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
     const absentStudents = students.filter(s => getStatus(s.id) === 'excused' || getStatus(s.id) === 'unexcused');
 
     // Save attendance record to persistent store
-    saveAttendance(activeClass.id, {
+    const saved = saveAttendance(activeClass.id, {
       date: todayStr,
       presentCount: presentStudents.length,
       lateCount: lateStudents.length,
       absentCount: absentStudents.length,
       totalStudents: students.length,
-      studentStatuses: attendanceMap,
-    });
-
-    if (rewardPoints) {
-      presentStudents.forEach(s => {
-        addPoints(s.id, 2, 'Chuyên cần - Đi học đúng giờ');
-      });
-      lateStudents.forEach(s => {
-        addPoints(s.id, 1, 'Chuyên cần - Đi học');
-      });
-    }
+      studentStatuses: Object.fromEntries(students.map(s => [s.id, getStatus(s.id)])),
+    }, rewardPoints);
+    if (!saved) return;
 
     if (soundEnabled) playSound('tada');
     triggerConfetti();
@@ -218,10 +215,11 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
             <input
               type="checkbox"
               checked={rewardPoints}
+              disabled={legacyRecord}
               onChange={(e) => setRewardPoints(e.target.checked)}
               className="w-4 h-4 text-purple-600 rounded-md focus:ring-purple-400 cursor-pointer"
             />
-            <span>Tặng +2 điểm chuyên cần cho học sinh có mặt hôm nay ⭐</span>
+            <span>{legacyRecord ? 'Bản điểm danh cũ: giữ nguyên điểm đã ghi trước đây' : 'Thưởng chuyên cần: đúng giờ +2, đi trễ +1 (lưu lại không cộng lặp)'}</span>
           </label>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -243,3 +241,4 @@ export function AttendanceModal({ isOpen, onClose }: AttendanceModalProps) {
     </div>
   );
 }
+

@@ -59,14 +59,15 @@ export const DashboardStatsRow = memo(function DashboardStatsRow({
       />
 
       <StatCard
-        label="Chuỗi tích cực"
-        value={`${Math.min(totalStudents, 12)} ngày`}
-        subValue="Kỷ lục chăm ngoan của lớp"
+        label="Ngày đã điểm danh"
+        value={`${activeClass.attendanceRecords?.length || 0} ngày`}
+        subValue="Số ngày có bản điểm danh"
         icon={Flame}
         colorScheme="pink"
-        trend="Xuất sắc"
+        trend="Đã ghi nhận"
         onClick={() => onNavigateTab?.('badges')}
       />
     </div>
   );
 });
+

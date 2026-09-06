@@ -1,18 +1,24 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persistSafely, browserStorage, type SyncStorage } from './persistence';
+import { validateSavedState } from './validation';
+import { applyAttendance, undoPoints } from './attendance';
+import { CHIBI_STUDENT_COVERS } from '../utils/chibiThemes';
 import { AppState, ClassData, Student, Teacher, Badge } from '../types';
 import { DEFAULT_BADGES, DEFAULT_LEVELS, DEFAULT_POINT_CRITERIA, DEFAULT_REWARDS, DEFAULT_TEACHER, createDefaultClass } from '../utils/defaults';
 
-const generateId = () => Math.random().toString(36).substring(2, 9);
+const generateId = () => crypto.randomUUID();
 
 const defaultInitialClass = createDefaultClass();
 
-export const useStore = create<AppState>()(
-  persist(
+export const createClassroomStore = (storage: SyncStorage = browserStorage()) => create<AppState>()(
+  persistSafely(
     (set, get) => ({
       appTitle: 'HÀNH TRÌNH CHINH PHỤC VINH QUANG',
       appSlogan: 'Mỗi ngày một cố gắng – Mỗi việc tốt một ngôi sao',
-      headerCoverUrl: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1920&q=80',
+      headerCoverUrl: CHIBI_STUDENT_COVERS[0].url,
+      archivedClasses: [],
+      storageError: null,
+      storageBlocked: false,
       backgroundConfig: {
         type: 'preset-gradient',
         presetGradientId: 'sunset',
@@ -70,7 +76,10 @@ export const useStore = create<AppState>()(
       setPointModal: (modal) => {
         set({ pointModal: modal });
       },
-      showToast: (message, type = 'success') => set({ toast: { message, type, id: Date.now() } }),
+      showToast: (message, type = 'success') => {
+        if (type === 'success' && get().storageError) return;
+        set({ toast: { message, type, id: Date.now() } });
+      },
       hideToast: () => set({ toast: null }),
 
       setTeacher: (teacher) => {
@@ -83,26 +92,12 @@ export const useStore = create<AppState>()(
         });
       },
       
-      createClass: (name, defaultGroups = true) => {
-        set((state) => {
-          const newClass: ClassData = {
-            id: generateId(),
-            name,
-            students: [],
-            groups: defaultGroups ? [
-              { id: generateId(), name: 'Tổ 1' },
-              { id: generateId(), name: 'Tổ 2' },
-              { id: generateId(), name: 'Tổ 3' },
-              { id: generateId(), name: 'Tổ 4' },
-            ] : [],
-            transactions: [],
-            rewardTransactions: [],
-            badges: [],
-          };
-          return { classes: [newClass], activeClassId: newClass.id };
-        });
+      // Compatibility action: a single-class app can rename, never replace its roster.
+      createClass: (name) => {
+        const current = get().classes[0];
+        if (current) get().updateClass(current.id, name.trim() || current.name);
       },
-      
+
       updateClass: (classId, name) => {
         set((state) => ({
           classes: state.classes.map(c => c.id === classId ? { ...c, name } : c),
@@ -110,7 +105,7 @@ export const useStore = create<AppState>()(
         }));
       },
       
-      setActiveClass: (classId) => set({ activeClassId: classId }),
+      setActiveClass: (classId) => { if (get().classes[0]?.id === classId) set({ activeClassId: classId }); },
       
       deleteClass: (classId) => {
         // Single class architecture requires at least 1 class
@@ -232,7 +227,7 @@ export const useStore = create<AppState>()(
               groups,
               students: c.students.map(s => ({
                 ...s,
-                groupId: studentGroupMap[s.id] !== undefined ? studentGroupMap[s.id] : s.groupId
+                groupId: studentGroupMap[s.id] !== undefined ? studentGroupMap[s.id] : (groups.some(g => g.id === s.groupId) ? s.groupId : undefined)
               }))
             };
           });
@@ -241,6 +236,7 @@ export const useStore = create<AppState>()(
       },
 
       addPoints: (studentId, amount, reason) => {
+        if (!Number.isFinite(amount) || amount === 0 || !reason.trim() || !get().classes[0]?.students.some(s => s.id === studentId)) return;
         set((state) => {
           if (!state.activeClassId) return state;
           const transaction = {
@@ -273,30 +269,9 @@ export const useStore = create<AppState>()(
         });
       },
 
-      undoLastTransaction: () => {
-        set((state) => {
-          if (!state.activeClassId) return state;
-          const classes = state.classes.map(c => {
-            if (c.id !== state.activeClassId || c.transactions.length === 0) return c;
-            const lastTx = c.transactions[0];
-            
-            return {
-              ...c,
-              transactions: c.transactions.slice(1),
-              students: c.students.map(s => {
-                if (s.id !== lastTx.studentId) return s;
-                return {
-                  ...s,
-                  points: s.points - lastTx.amount,
-                  totalPositivePoints: lastTx.amount > 0 ? s.totalPositivePoints - lastTx.amount : s.totalPositivePoints,
-                  totalNegativePoints: lastTx.amount < 0 ? s.totalNegativePoints - Math.abs(lastTx.amount) : s.totalNegativePoints,
-                };
-              })
-            };
-          });
-          return { classes };
-        });
-      },
+      undoLastTransaction: () => set(state => ({
+        classes: state.classes.map(c => c.id === state.activeClassId ? undoPoints(c) : c),
+      })),
 
       // Avatar Actions
       addCustomAvatar: (classId, avatar) => {
@@ -413,6 +388,8 @@ export const useStore = create<AppState>()(
       },
 
       awardBadge: (studentId, badgeId) => {
+        const badge = get().badges.find(b => b.id === badgeId);
+        if (!badge || !get().classes[0]?.students.some(s => s.id === studentId)) return;
         set((state) => {
           if (!state.activeClassId) return state;
           const badgeTransaction = {
@@ -420,6 +397,8 @@ export const useStore = create<AppState>()(
             studentId,
             classId: state.activeClassId,
             badgeId,
+            badgeName: badge.name,
+            badgeIcon: badge.icon,
             timestamp: Date.now(),
           };
 
@@ -473,6 +452,13 @@ export const useStore = create<AppState>()(
       },
 
       redeemReward: (studentId, rewardId) => {
+        const current = get();
+        const student = current.classes[0]?.students.find(s => s.id === studentId);
+        const selectedReward = current.rewards.find(r => r.id === rewardId);
+        if (!student || !selectedReward || selectedReward.isActive === false || !Number.isFinite(selectedReward.cost) || selectedReward.cost <= 0 || student.points < selectedReward.cost) {
+          current.showToast('Không thể đổi quà: kiểm tra học sinh, điểm và trạng thái phần thưởng.', 'error');
+          return false;
+        }
         set((state) => {
           if (!state.activeClassId) return state;
           const reward = state.rewards.find(r => r.id === rewardId);
@@ -483,6 +469,8 @@ export const useStore = create<AppState>()(
             studentId,
             classId: state.activeClassId,
             rewardId,
+            rewardName: reward.name,
+            rewardIcon: reward.icon,
             cost: reward.cost,
             timestamp: Date.now(),
           };
@@ -500,6 +488,7 @@ export const useStore = create<AppState>()(
           });
           return { classes };
         });
+        return !get().storageError;
       },
 
       // Custom Reward Icon Actions
@@ -579,53 +568,51 @@ export const useStore = create<AppState>()(
       importStudents: (students, options) => {
         set((state) => {
           const targetClassId = options?.classId || state.activeClassId;
-          if (!targetClassId) return state;
-          const classes = state.classes.map(c => {
-            if (c.id !== targetClassId) return c;
-            const newStudents: Student[] = students.map(s => ({
-              id: generateId(),
-              name: s.name,
-              gender: s.gender,
-              avatarId: s.avatarId,
-              groupId: s.groupId,
-              points: 0,
-              totalPositivePoints: 0,
-              totalNegativePoints: 0,
-              badgeIds: [],
-              status: 'active',
-            }));
-            return {
-              ...c,
-              students: options?.replace ? newStudents : [...c.students, ...newStudents],
-            };
+          const target = state.classes.find(c => c.id === targetClassId);
+          if (!target || !students.length) return state;
+          const groups = [...target.groups];
+          const normalize = (value: string) => value.trim().replace(/\s+/g, ' ').toLocaleLowerCase('vi');
+          const newStudents: Student[] = students.map(s => {
+            let groupId = s.groupId && groups.some(g => g.id === s.groupId) ? s.groupId : undefined;
+            if (s.groupName?.trim()) {
+              let group = groups.find(g => normalize(g.name) === normalize(s.groupName!));
+              if (!group) { group = { id: generateId(), name: s.groupName.trim() }; groups.push(group); }
+              groupId = group.id;
+            }
+            return { id: generateId(), name: s.name.trim(), gender: s.gender, avatarId: s.avatarId,
+              groupId, points: 0, totalPositivePoints: 0, totalNegativePoints: 0, badgeIds: [], status: 'active' };
           });
-          return { classes };
+          // Retain the old roster and all related records in exported backups.
+          const archiveId = generateId();
+          const archive = options?.replace ? {
+            ...target, id: archiveId, name: `${target.name} (trước thay danh sách)`,
+            transactions: target.transactions.map(t => ({ ...t, classId: archiveId })),
+            badges: target.badges.map(t => ({ ...t, classId: archiveId })),
+            rewardTransactions: target.rewardTransactions.map(t => ({ ...t, classId: archiveId })),
+          } : null;
+          return {
+            archivedClasses: archive ? [...state.archivedClasses, archive] : state.archivedClasses,
+            classes: state.classes.map(c => c.id !== targetClassId ? c : {
+              ...c, groups, students: options?.replace ? newStudents : [...c.students, ...newStudents],
+              ...(options?.replace ? { transactions: [], badges: [], rewardTransactions: [], attendanceRecords: [] } : {}),
+            }),
+          };
         });
       },
 
-      saveAttendance: (classId, recordData) => {
-        set((state) => {
-          const targetClassId = classId || state.activeClassId;
-          if (!targetClassId) return state;
-
-          const newRecord = {
-            ...recordData,
-            id: generateId(),
-            timestamp: Date.now(),
-          };
-
-          const classes = state.classes.map(c => {
-            if (c.id !== targetClassId) return c;
-            const existingRecords = c.attendanceRecords || [];
-            const filtered = existingRecords.filter(r => r.date !== recordData.date);
-            return {
-              ...c,
-              attendanceRecords: [newRecord, ...filtered]
-            };
+      saveAttendance: (classId, recordData, rewardPoints = false) => {
+        try {
+          set(state => {
+            const current = state.classes.find(c => c.id === classId);
+            if (!current) return state;
+            const updated = applyAttendance(current, recordData.date, recordData.studentStatuses, rewardPoints, state.teacher?.id || 'unknown');
+            return updated === current ? state : { classes: state.classes.map(c => c.id === classId ? updated : c) };
           });
-
-          return { classes };
-        });
+          return !get().storageError;
+        } catch {
+          get().showToast('Điểm danh chưa hợp lệ. Vui lòng kiểm tra lại danh sách.', 'error');
+          return false;
+        }
       },
 
       toggleSound: () => set((state) => ({ soundEnabled: !state.soundEnabled })),
@@ -640,6 +627,7 @@ export const useStore = create<AppState>()(
             return {
               ...c,
               transactions: [],
+              attendanceRecords: c.attendanceRecords?.map(r => ({ ...r, rewardAmounts: {}, rewardEnabled: false })),
               students: c.students.map(s => ({
                 ...s,
                 points: 0,
@@ -697,6 +685,7 @@ export const useStore = create<AppState>()(
               transactions: [],
               badges: [],
               rewardTransactions: [],
+              attendanceRecords: c.attendanceRecords?.map(r => ({ ...r, rewardAmounts: {}, rewardEnabled: false })),
               students: c.students.map(s => ({
                 ...s,
                 points: 0,
@@ -712,43 +701,30 @@ export const useStore = create<AppState>()(
 
       resetData: () => {
         const freshClass = createDefaultClass();
-        set({ 
-          classes: [freshClass], 
-          activeClassId: freshClass.id,
-          teacher: DEFAULT_TEACHER,
-          badges: DEFAULT_BADGES,
-          rewards: DEFAULT_REWARDS,
-          levels: DEFAULT_LEVELS,
-          pointCriteria: DEFAULT_POINT_CRITERIA,
+        set({
+          appTitle: 'HÀNH TRÌNH CHINH PHỤC VINH QUANG',
+          appSlogan: 'Mỗi ngày một cố gắng – Mỗi việc tốt một ngôi sao',
+          headerCoverUrl: CHIBI_STUDENT_COVERS[0].url,
+          backgroundConfig: { type: 'preset-gradient', presetGradientId: 'sunset' },
+          classes: [freshClass], activeClassId: freshClass.id, archivedClasses: [], teacher: DEFAULT_TEACHER,
+          badges: DEFAULT_BADGES, rewards: DEFAULT_REWARDS, levels: DEFAULT_LEVELS,
+          pointCriteria: DEFAULT_POINT_CRITERIA, customRewardIcons: [], soundEnabled: true,
+          pointModal: null, studentReportModal: null, toast: null, presentationMode: false, storageBlocked: false,
         });
       },
       restoreData: (data) => {
-        set({ ...data });
+        try {
+          const validated = validateSavedState(data);
+          set({ ...validated, storageBlocked: false, pointModal: null, studentReportModal: null, toast: null });
+          return !get().storageError;
+        } catch {
+          get().showToast('File sao lưu sai cấu trúc hoặc dữ liệu không hợp lệ. Dữ liệu hiện tại được giữ nguyên.', 'error');
+          return false;
+        }
       },
     }),
-    {
-      name: 'htcvq-storage',
-      onRehydrateStorage: () => (state) => {
-        if (typeof window !== 'undefined' && state) {
-          // Guarantee exactly 1 teacher and 1 class
-          if (!state.teacher) {
-            state.teacher = DEFAULT_TEACHER;
-          }
-          if (!state.classes || state.classes.length === 0) {
-            const defaultCls = createDefaultClass();
-            state.classes = [defaultCls];
-            state.activeClassId = defaultCls.id;
-          } else if (state.classes.length > 1) {
-            const chosen = state.classes.find(c => c.id === state.activeClassId) || state.classes[0];
-            state.classes = [chosen];
-            state.activeClassId = chosen.id;
-          } else {
-            state.activeClassId = state.classes[0].id;
-          }
-        }
-      }
-    }
+    storage,
   )
 );
-
+export const useStore = createClassroomStore();
 export * from './selectors';

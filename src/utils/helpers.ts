@@ -2,6 +2,7 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import confetti from "canvas-confetti";
 import { PRESET_AVATARS } from "./avatarCatalog";
+import { DEFAULT_LEVELS } from './defaults';
 import { CustomAvatar, Level } from "../types";
 import { generateChibiStudentSvg, chibiSvgToDataUrl } from "./chibiAvatars";
 
@@ -135,7 +136,9 @@ export const triggerConfetti = () => {
 };
 
 export const getLevelForPoints = (points: number, levels: Level[]): Level => {
-  return levels.find(l => points >= l.minPoints && points <= l.maxPoints) || levels[levels.length - 1];
+  const ordered = [...(levels.length ? levels : DEFAULT_LEVELS)].sort((a,b) => a.minPoints-b.minPoints);
+  const score = Number.isFinite(points) ? points : 0;
+  return [...ordered].reverse().find(l => score >= l.minPoints) || ordered[0];
 };
 
 export const getAvatarUrl = (avatarId?: string, customAvatars?: CustomAvatar[]): string => {
@@ -350,4 +353,5 @@ export const formatDate = (timestamp: number) => {
     year: 'numeric'
   });
 };
+
 

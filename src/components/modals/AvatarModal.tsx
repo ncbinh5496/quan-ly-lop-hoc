@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   X, 
@@ -54,7 +55,7 @@ export function AvatarModal({
     updateCustomAvatar, 
     setStudentAvatar, 
     showToast 
-  } = useStore();
+  } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, addCustomAvatar: state.addCustomAvatar, addMultipleCustomAvatars: state.addMultipleCustomAvatars, deleteCustomAvatar: state.deleteCustomAvatar, updateCustomAvatar: state.updateCustomAvatar, setStudentAvatar: state.setStudentAvatar, showToast: state.showToast })));
 
   const classId = targetClassId || activeClassId;
   const currentClass = classes.find(c => c.id === classId) || classes[0];
@@ -82,6 +83,7 @@ export function AvatarModal({
   const [isCameraActive, setIsCameraActive] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const cameraRequestRef = useRef(0);
 
   // Edit custom avatar name
   const [editingAvatarId, setEditingAvatarId] = useState<string | null>(null);
@@ -122,6 +124,7 @@ export function AvatarModal({
   }, []);
 
   const stopCamera = () => {
+    cameraRequestRef.current++;
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -132,13 +135,12 @@ export function AvatarModal({
   const startCamera = async () => {
     try {
       stopCamera();
+      const requestId = cameraRequestRef.current;
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: 'user', width: { ideal: 400 }, height: { ideal: 400 } } 
       });
+      if (requestId !== cameraRequestRef.current) { stream.getTracks().forEach(track => track.stop()); return; }
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
       setIsCameraActive(true);
     } catch (err) {
       console.error('Camera error:', err);
@@ -146,8 +148,12 @@ export function AvatarModal({
     }
   };
 
+  useEffect(() => {
+    if (isCameraActive && videoRef.current && streamRef.current) videoRef.current.srcObject = streamRef.current;
+  }, [isCameraActive]);
+
   const capturePhoto = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current?.videoWidth || !videoRef.current?.videoHeight) { showToast('Camera chưa sẵn sàng, vui lòng đợi một lát.', 'info'); return; }
     const canvas = document.createElement('canvas');
     const size = Math.min(videoRef.current.videoWidth, videoRef.current.videoHeight) || 300;
     canvas.width = size;
@@ -983,3 +989,4 @@ export function AvatarModal({
     </div>
   );
 }
+

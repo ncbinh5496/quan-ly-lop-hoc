@@ -16,6 +16,9 @@ export interface Student {
 }
 
 export interface Group {
+  leaderId?: string;
+  icon?: string;
+  color?: string;
   id: string;
   name: string;
 }
@@ -46,6 +49,8 @@ export interface CustomRewardIcon {
 }
 
 export interface AttendanceRecord {
+  rewardAmounts?: Record<string, number>;
+  rewardEnabled?: boolean;
   id: string;
   date: string; // YYYY-MM-DD
   presentCount: number;
@@ -69,6 +74,8 @@ export interface ClassData {
 }
 
 export interface PointTransaction {
+  attendanceDate?: string;
+  batchId?: string;
   id: string;
   studentId: string;
   classId: string;
@@ -79,6 +86,8 @@ export interface PointTransaction {
 }
 
 export interface RewardTransaction {
+  rewardName?: string;
+  rewardIcon?: string;
   id: string;
   studentId: string;
   classId: string;
@@ -88,6 +97,8 @@ export interface RewardTransaction {
 }
 
 export interface StudentBadge {
+  badgeName?: string;
+  badgeIcon?: string;
   id: string;
   studentId: string;
   classId: string;
@@ -140,6 +151,9 @@ export interface BackgroundConfig {
 }
 
 export interface AppState {
+  archivedClasses: ClassData[];
+  storageError: string | null;
+  storageBlocked: boolean;
   appTitle?: string;
   appSlogan?: string;
   headerCoverUrl?: string;
@@ -199,7 +213,7 @@ export interface AppState {
   updateBadge: (id: string, data: Partial<Badge>) => void;
   deleteBadge: (id: string) => void;
   resetBadges: () => void;
-  redeemReward: (studentId: string, rewardId: string) => void;
+  redeemReward: (studentId: string, rewardId: string) => boolean;
   
   // Reward Actions
   customRewardIcons?: CustomRewardIcon[];
@@ -213,10 +227,10 @@ export interface AppState {
   resetRewards: () => void;
   
   importStudents: (
-    students: Array<{ name: string; gender: Gender; avatarId: string; groupId?: string }>,
+    students: Array<{ name: string; gender: Gender; avatarId: string; groupId?: string; groupName?: string }>,
     options?: { replace?: boolean; classId?: string }
   ) => void;
-  saveAttendance: (classId: string, record: Omit<AttendanceRecord, 'id' | 'timestamp'>) => void;
+  saveAttendance: (classId: string, record: Omit<AttendanceRecord, 'id' | 'timestamp'>, rewardPoints?: boolean) => boolean;
   
   toggleSound: () => void;
   togglePresentationMode: () => void;
@@ -235,5 +249,6 @@ export interface AppState {
   resetClassRewards: (classId?: string) => void;
   resetClassAllProgress: (classId?: string) => void;
   resetData: () => void;
-  restoreData: (data: Record<string, unknown>) => void;
+  restoreData: (data: unknown) => boolean;
 }
+

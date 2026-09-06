@@ -8,7 +8,8 @@ import { AwardBadgeModal } from '../components/modals/AwardBadgeModal';
 import { DashboardHero } from '../components/dashboard/DashboardHero';
 import { DashboardStatsRow } from '../components/dashboard/DashboardStatsRow';
 import { TopEmulationStars } from '../components/dashboard/TopEmulationStars';
-import { getRankedStudents } from '../utils/scoreCalculator';
+import { useClassroomDate } from '../utils/useClassroomDate';
+import { getRankedStudents, filterTransactionsByTime } from '../utils/scoreCalculator';
 
 interface DashboardProps {
   onNavigateTab?: (tab: string) => void;
@@ -26,6 +27,8 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
 
   const activeClass = useActiveClass();
 
+  const todayStr = useClassroomDate();
+
   // Calculate comprehensive statistics
   const totalStudents = activeClass?.students.length || 0;
   const totalPoints = useMemo(() => {
@@ -37,21 +40,20 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
   // Weekly points estimate (or current positive transactions)
   const weeklyPoints = useMemo(() => {
     if (!activeClass) return 0;
-    const recentTransactions = activeClass.transactions || [];
+    const recentTransactions = filterTransactionsByTime(activeClass.transactions || [], 'week');
     return recentTransactions
       .filter(t => t.amount > 0)
-      .reduce((sum, t) => sum + t.amount, 0) || Math.round(totalPoints * 0.4);
-  }, [activeClass?.transactions, totalPoints]);
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [activeClass?.transactions, todayStr]);
 
   // Real-time Attendance Statistics
-  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
   const todayAttendance = useMemo(() => {
     return activeClass?.attendanceRecords?.find(r => r.date === todayStr);
   }, [activeClass?.attendanceRecords, todayStr]);
 
   const presentStudentsCount = todayAttendance
     ? (todayAttendance.presentCount + todayAttendance.lateCount)
-    : totalStudents;
+    : 0;
 
   const attendanceRate = totalStudents > 0 
     ? Math.round((presentStudentsCount / totalStudents) * 100) 
@@ -59,13 +61,13 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
 
   const attendanceTrend = todayAttendance
     ? (attendanceRate === 100 ? '100% Đầy đủ' : (attendanceRate >= 90 ? 'Chuyên cần' : 'Cần lưu ý'))
-    : (totalStudents > 0 ? 'Đầy đủ' : 'Chưa có HS');
+    : 'Chưa điểm danh';
 
   const attendanceSubValue = todayAttendance
     ? (todayAttendance.absentCount > 0
         ? `Vắng ${todayAttendance.absentCount} bạn · Đạt ${attendanceRate}%`
         : 'Cả lớp có mặt đầy đủ 100%')
-    : `Tỷ lệ chuyên cần ${attendanceRate}%`;
+    : 'Chưa có bản điểm danh hôm nay';
 
   // Top 4 students for "Ngôi sao sáng"
   const topStudents = useMemo(() => {
@@ -232,3 +234,4 @@ export default function Dashboard({ onNavigateTab }: DashboardProps) {
     </div>
   );
 }
+

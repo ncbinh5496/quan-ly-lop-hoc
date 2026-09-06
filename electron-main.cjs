@@ -19,7 +19,8 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      webSecurity: false, // Allows local file audio/images to load offline smoothly
+      webSecurity: true,
+      sandbox: true,
       spellcheck: false,
     },
     show: false, // Don't show until ready-to-show to avoid white flash
@@ -48,10 +49,21 @@ function createWindow() {
   // Open external links in default browser instead of electron window
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     if (url.startsWith('http:') || url.startsWith('https:')) {
-      shell.openExternal(url);
+      shell.openExternal(url).catch(() => {});
       return { action: 'deny' };
     }
-    return { action: 'allow' };
+    return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url !== mainWindow.webContents.getURL()) {
+      event.preventDefault();
+      if (/^https?:/.test(url)) shell.openExternal(url).catch(() => {});
+    }
+  });
+  mainWindow.webContents.session.setPermissionRequestHandler((contents, permission, callback, details) => {
+    callback(contents === mainWindow.webContents && permission === 'media' &&
+      details.mediaTypes?.length > 0 && details.mediaTypes.every(type => type === 'video'));
   });
 
   // Custom Application Menu (Vietnamese)
@@ -126,7 +138,7 @@ function createWindow() {
               type: 'info',
               title: 'Hành Trình Chinh Phục Vinh Quang',
               message: 'Hệ Thống Quản Lý Lớp Học & Điểm Thưởng',
-              detail: 'Phiên bản Offline Desktop v1.0.0\nTác giả: Cô Phương Anh\nỨng dụng chạy hoàn toàn offline không cần kết nối mạng.',
+              detail: 'Phiên bản Offline Desktop v1.0.0\nTác giả: Cô Phương Anh\nDữ liệu và tài nguyên mặc định lưu trên máy. Ảnh liên kết bên ngoài cần kết nối mạng.',
               buttons: ['Đóng'],
             });
           },
@@ -169,3 +181,4 @@ if (!gotTheLock) {
     }
   });
 }
+

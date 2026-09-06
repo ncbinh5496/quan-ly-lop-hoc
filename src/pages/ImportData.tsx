@@ -1,3 +1,4 @@
+import { downloadBackup } from '../utils/backup';
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { 
   Upload, 
@@ -409,16 +410,19 @@ export default function ImportData({ onNavigateTab }: ImportDataProps) {
       return {
         name: s.name.trim(),
         gender: s.gender,
+        groupName: s.groupName,
         avatarId: isBoy ? `boy-${randomAvatarNum}` : `girl-${randomAvatarNum}`,
       };
     });
 
+    if (importOption === 'replace' && !downloadBackup(useStore.getState(), 'truoc-thay-danh-sach')) return;
     importStudents(mappedToStore, {
       replace: importOption === 'replace',
       classId: targetClassId,
     });
 
-    playSound('success');
+    if (useStore.getState().storageError) return;
+    if (useStore.getState().soundEnabled) playSound('success');
     triggerConfetti();
 
     const classLabel = targetClass?.name ? `lớp ${targetClass.name}` : 'lớp học';
@@ -1224,3 +1228,4 @@ export default function ImportData({ onNavigateTab }: ImportDataProps) {
     </div>
   );
 }
+

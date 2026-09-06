@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useState } from 'react';
 import { X, Star, AlertTriangle, Settings, Plus, Pencil } from 'lucide-react';
 import { Student } from '../../types';
@@ -12,7 +13,7 @@ interface PointModalProps {
 }
 
 export function PointModal({ student, type, onClose }: PointModalProps) {
-  const { classes, activeClassId, pointCriteria, addPoints, soundEnabled } = useStore();
+  const { classes, activeClassId, pointCriteria, addPoints, soundEnabled } = useStore(useShallow(state => ({ classes: state.classes, activeClassId: state.activeClassId, pointCriteria: state.pointCriteria, addPoints: state.addPoints, soundEnabled: state.soundEnabled })));
   const [customReason, setCustomReason] = useState('');
   const [customAmount, setCustomAmount] = useState(type === 'positive' ? 1 : -1);
   const [showCriteriaModal, setShowCriteriaModal] = useState(false);
@@ -194,4 +195,5 @@ export function PointModal({ student, type, onClose }: PointModalProps) {
     </>
   );
 }
+
 

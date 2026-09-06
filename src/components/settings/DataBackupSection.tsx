@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store';
+import { parseBackup } from '../../store/validation';
+import { downloadBackup } from '../../utils/backup';
 import { Download, Upload, AlertTriangle, RotateCcw } from 'lucide-react';
 
 export default function DataBackupSection() {
@@ -8,37 +10,23 @@ export default function DataBackupSection() {
   const showToast = useStore(state => state.showToast);
 
   const [isConfirmingReset, setIsConfirmingReset] = useState(false);
+  const archives = useStore(state => state.archivedClasses);
   const [pendingImportData, setPendingImportData] = useState<any | null>(null);
 
   const handleExportData = () => {
-    const stateStr = localStorage.getItem('htcvq-storage');
-    if (!stateStr) return;
-    
-    const blob = new Blob([stateStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `hanh-trinh-vinh-quang-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('Đã xuất file sao lưu dữ liệu thành công!');
+    if (downloadBackup(useStore.getState())) showToast('Đã xuất file sao lưu dữ liệu!');
   };
 
   const handleImportData = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (file.size > 50 * 1024 * 1024) { showToast('File sao lưu vượt quá 50 MB.', 'error'); return; }
     const reader = new FileReader();
+    reader.onerror = () => showToast('Không đọc được file sao lưu.', 'error');
     reader.onload = (event) => {
       try {
-        const json = JSON.parse(event.target?.result as string);
-        if (json && json.state) {
-          setPendingImportData(json.state);
-        } else {
-          showToast('File sao lưu không hợp lệ hoặc thiếu cấu trúc dữ liệu.', 'error');
-        }
+        setPendingImportData(parseBackup(event.target?.result as string));
       } catch (err) {
         showToast('File sao lưu không hợp lệ.', 'error');
       }
@@ -49,14 +37,17 @@ export default function DataBackupSection() {
 
   const confirmImport = () => {
     if (pendingImportData) {
-      restoreData(pendingImportData);
+      if (!downloadBackup(useStore.getState(), 'truoc-phuc-hoi')) return;
+      if (!restoreData(pendingImportData)) return;
       showToast('Khôi phục dữ liệu thành công!');
       setPendingImportData(null);
     }
   };
 
   const confirmReset = () => {
+    if (!downloadBackup(useStore.getState(), 'truoc-xoa')) return;
     resetData();
+    if (useStore.getState().storageError) return;
     showToast('Đã khôi phục dữ liệu gốc thành công!');
     setIsConfirmingReset(false);
   };
@@ -97,6 +88,17 @@ export default function DataBackupSection() {
         </div>
       </div>
 
+      {archives.length > 0 && (
+        <div className="space-y-2 border-t pt-4">
+          <h4 className="font-bold">Danh sách đã lưu trước đây</h4>
+          <p className="text-xs text-slate-500">Các bản này được giữ trong file sao lưu. Phục hồi sẽ thay thế lớp đang quản lý.</p>
+          {archives.map(archive => <button key={archive.id} className="block text-sm text-purple-700 underline" onClick={() => {
+            const current = useStore.getState();
+            setPendingImportData({ ...current, classes: [archive], activeClassId: archive.id,
+              archivedClasses: [...current.archivedClasses.filter(c => c.id !== archive.id), ...current.classes] });
+          }}>Phục hồi {archive.name} · {archive.students.length} học sinh</button>)}
+        </div>
+      )}
       {/* Restore Import Confirmation Modal */}
       {pendingImportData && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4">
@@ -161,3 +163,4 @@ export default function DataBackupSection() {
     </div>
   );
 }
+

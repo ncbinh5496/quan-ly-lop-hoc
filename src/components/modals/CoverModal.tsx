@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useRef } from 'react';
 import { X, Image as ImageIcon, Upload, Link, Check, Sparkles, RefreshCw, Smile, Palette, Award, Heart } from 'lucide-react';
 import { useStore } from '../../store';
@@ -12,7 +13,7 @@ interface CoverModalProps {
 export const PRESET_COVERS = CHIBI_STUDENT_COVERS;
 
 export function CoverModal({ isOpen, onClose }: CoverModalProps) {
-  const { headerCoverUrl, setHeaderCoverUrl, showToast } = useStore();
+  const { headerCoverUrl, setHeaderCoverUrl, showToast } = useStore(useShallow(state => ({ headerCoverUrl: state.headerCoverUrl, setHeaderCoverUrl: state.setHeaderCoverUrl, showToast: state.showToast })));
   const [activeTab, setActiveTab] = useState<'preset' | 'upload' | 'url'>('preset');
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'chibi-student' | 'classroom' | 'galaxy-nature'>('chibi-student');
   const [urlInput, setUrlInput] = useState('');
@@ -357,3 +358,4 @@ export function CoverModal({ isOpen, onClose }: CoverModalProps) {
     </div>
   );
 }
+

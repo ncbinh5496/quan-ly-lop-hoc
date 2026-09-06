@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Home, 
@@ -48,7 +49,7 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
     soundEnabled, 
     toggleSound, 
     rewards,
-  } = useStore();
+  } = useStore(useShallow(state => ({ teacher: state.teacher, classes: state.classes, activeClassId: state.activeClassId, setActiveClass: state.setActiveClass, showToast: state.showToast, soundEnabled: state.soundEnabled, toggleSound: state.toggleSound, rewards: state.rewards })));
   const [showTeacherModal, setShowTeacherModal] = useState(false);
   const [showClassModal, setShowClassModal] = useState(false);
   const [editingClassId, setEditingClassId] = useState<string | null>(null);
@@ -83,7 +84,7 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
 
   const handleOpenAddClass = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setEditingClassId(null);
+    setEditingClassId(activeClassId);
     setShowClassModal(true);
     setShowClassDropdown(false);
   };
@@ -309,13 +310,13 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
                 {/* Header in Popover */}
                 <div className="flex items-center justify-between px-1 pb-2 border-b border-white/20">
                   <span className="text-xs font-black uppercase tracking-wider text-purple-100 flex items-center gap-1.5 drop-shadow-2xs">
-                    <School size={13} className="text-amber-300" /> Danh sách lớp
+                    <School size={13} className="text-amber-300" /> Lớp chủ nhiệm
                   </span>
                   <button
                     onClick={handleOpenAddClass}
                     className="px-2.5 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-black flex items-center gap-1 transition-all border border-white/30 shadow-xs cursor-pointer active:scale-95"
                   >
-                    <Plus size={13} className="text-amber-300" /> Thêm lớp
+                    <Plus size={13} className="text-amber-300" /> Đổi tên lớp
                   </button>
                 </div>
 
@@ -559,3 +560,4 @@ export function Sidebar({ collapsed, setCollapsed, activeTab, setActiveTab }: Si
     </>
   );
 }
+

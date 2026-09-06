@@ -90,8 +90,8 @@ export default function Rewards() {
       return {
         ...tx,
         studentName: student?.name || 'Học sinh',
-        rewardName: reward?.name || 'Phần thưởng',
-        rewardIcon: reward?.icon || '🎁',
+        rewardName: tx.rewardName || reward?.name || 'Phần thưởng',
+        rewardIcon: tx.rewardIcon || reward?.icon || '🎁',
       };
     });
   }, [activeClass?.rewardTransactions, studentsMap, rewardsMap]);
@@ -130,7 +130,7 @@ export default function Rewards() {
   };
 
   const handleSelectRewardForRedeem = (reward: Reward) => {
-    if (!reward.isActive) {
+    if (reward.isActive === false) {
       showToast('Phần thưởng này đang tạm ẩn, hãy mở lại để đổi thưởng', 'info');
       return;
     }
@@ -143,7 +143,7 @@ export default function Rewards() {
       if (!student) return;
 
       if (student.points >= selectedReward.cost) {
-        redeemReward(selectedStudentId, selectedReward.id);
+        if (!redeemReward(selectedStudentId, selectedReward.id)) return;
         if (soundEnabled) playSound('tada');
         triggerConfetti();
         showToast(`🎉 Chúc mừng ${student.name} đã đổi thành công "${selectedReward.name}"!`);
@@ -591,3 +591,4 @@ export default function Rewards() {
     </div>
   );
 }
+

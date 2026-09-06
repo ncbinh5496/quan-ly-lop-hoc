@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Save, UserCheck, School, BookOpen, Calendar, GraduationCap, Camera, Upload, Trash2 } from 'lucide-react';
 import { useStore } from '../../store';
@@ -9,7 +10,7 @@ interface TeacherModalProps {
 }
 
 export function TeacherModal({ isOpen, onClose }: TeacherModalProps) {
-  const { teacher, setTeacher, showToast } = useStore();
+  const { teacher, setTeacher, showToast } = useStore(useShallow(state => ({ teacher: state.teacher, setTeacher: state.setTeacher, showToast: state.showToast })));
   const [formData, setFormData] = useState({
     name: '',
     avatarUrl: '',
@@ -241,3 +242,4 @@ export function TeacherModal({ isOpen, onClose }: TeacherModalProps) {
     </div>
   );
 }
+

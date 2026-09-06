@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import React, { useState, useRef } from 'react';
 import { 
   X, 
@@ -54,7 +55,7 @@ export function RewardIconGalleryModal({
     deleteCustomRewardIcon, 
     showToast,
     soundEnabled 
-  } = useStore();
+  } = useStore(useShallow(state => ({ customRewardIcons: state.customRewardIcons, addCustomRewardIcon: state.addCustomRewardIcon, addMultipleCustomRewardIcons: state.addMultipleCustomRewardIcons, updateCustomRewardIcon: state.updateCustomRewardIcon, deleteCustomRewardIcon: state.deleteCustomRewardIcon, showToast: state.showToast, soundEnabled: state.soundEnabled })));
 
   const [activeTab, setActiveTab] = useState<'all' | 'custom' | 'upload'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -825,3 +826,4 @@ export function RewardIconGalleryModal({
     </div>
   );
 }
+
